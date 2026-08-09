@@ -1,0 +1,26 @@
+# Dependências
+node_modules/
+
+# Build / dist
+dist/
+
+# Cache do electron-builder
+*.cache/
+
+# Sistema / IDE
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Configuração local do usuário (salva em %APPDATA%)
+multiconta-config.json
+window-state.json

@@ -1,0 +1,236 @@
+:root {
+  --bg: #14161a;
+  --pane-border: #2a2d33;
+  --header-bg: #1d2025;
+  --text: #d8dadf;
+  --text-dim: #8a8d94;
+  --accent: #4f8cff;
+  --danger: #ff5c5c;
+  --ok: #37c977;
+  --warn: #f4b740;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0; padding: 0; height: 100%; width: 100%;
+  background: var(--bg);
+  font-family: -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  overflow: hidden;
+}
+
+.hidden { display: none !important; }
+
+/* --- Barra superior --- */
+
+#toolbar {
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 10px;
+  background: var(--header-bg);
+  color: var(--text);
+  font-size: 12px;
+  border-bottom: 1px solid var(--pane-border);
+}
+
+#toolbar-title { font-weight: 600; letter-spacing: 0.3px; }
+
+#toolbar button {
+  background: transparent;
+  border: 1px solid #3a3d44;
+  color: var(--text);
+  border-radius: 4px;
+  padding: 4px 10px;
+  font-size: 11px;
+  cursor: pointer;
+}
+#toolbar button:hover { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+/* --- Tela de setup inicial --- */
+
+#setup-screen {
+  position: fixed;
+  top: 32px; left: 0; right: 0; bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg);
+  z-index: 30;
+}
+
+.setup-box {
+  background: var(--header-bg);
+  border: 1px solid var(--pane-border);
+  border-radius: 10px;
+  padding: 28px;
+  width: 340px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  color: var(--text);
+}
+
+.setup-box h1 { margin: 0; font-size: 18px; }
+.setup-box p { margin: 0; font-size: 13px; color: var(--text-dim); }
+
+.setup-box label {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+.setup-box input {
+  background: #24272d;
+  border: 1px solid #3a3d44;
+  color: var(--text);
+  padding: 8px;
+  border-radius: 5px;
+  font-size: 13px;
+}
+
+.setup-box button {
+  margin-top: 6px;
+  background: var(--accent);
+  border: none;
+  color: #fff;
+  padding: 10px;
+  border-radius: 5px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.setup-box button:hover { filter: brightness(1.1); }
+
+/* --- Grade de contas --- */
+
+#grid-container {
+  position: relative;
+  width: 100vw;
+  height: calc(100vh - 32px);
+  display: grid;
+  background: var(--pane-border);
+}
+
+.pane {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.pane-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 3px 6px;
+  background: var(--header-bg);
+  color: var(--text);
+  font-size: 11px;
+  height: 26px;
+  flex-shrink: 0;
+}
+
+.pane-header .label-wrap { display: flex; align-items: center; gap: 6px; min-width: 0; }
+
+/* Alça de arrasto para reordenar a conta na grade */
+.drag-grip {
+  cursor: grab;
+  color: var(--text-dim);
+  font-size: 12px;
+  line-height: 1;
+  padding: 0 2px;
+  flex-shrink: 0;
+  user-select: none;
+}
+.drag-grip:hover { color: var(--text); }
+.pane-header.dragging .drag-grip { cursor: grabbing; color: var(--accent); }
+.pane-header.drag-over { outline: 1px solid var(--accent); outline-offset: -1px; }
+
+.status-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--text-dim);
+  flex-shrink: 0;
+}
+.status-dot.ok { background: var(--ok); }
+.status-dot.loading { background: var(--warn); animation: pulse 1s infinite ease-in-out; }
+.status-dot.error { background: var(--danger); }
+
+@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.35; } }
+
+.pane-header .label {
+  font-weight: 600;
+  outline: none;
+  cursor: text;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 140px;
+}
+
+.pane-header .actions { display: flex; gap: 3px; flex-shrink: 0; }
+
+.pane-header .actions button {
+  background: transparent;
+  border: 1px solid #3a3d44;
+  color: var(--text);
+  border-radius: 4px;
+  padding: 1px 6px;
+  font-size: 11px;
+  cursor: pointer;
+  line-height: 1.5;
+}
+.pane-header .actions button:hover { background: var(--accent); border-color: var(--accent); color: #fff; }
+.pane-header .actions button.close-btn:hover { background: var(--danger); border-color: var(--danger); }
+
+.pane-body {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  background: var(--bg);
+}
+
+.pane-overlay {
+  position: absolute;
+  top: 26px; left: 0; right: 0; bottom: 0;
+  background: rgba(10, 11, 13, 0.9);
+  color: var(--text);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 12px;
+  text-align: center;
+  padding: 12px;
+  z-index: 5;
+}
+.pane-overlay button {
+  background: var(--accent);
+  border: none;
+  color: #fff;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+/* --- Divisorias arrastaveis --- */
+
+.v-resizer {
+  cursor: col-resize;
+  background: var(--pane-border);
+}
+.v-resizer:hover, .v-resizer.dragging { background: var(--accent); }
+
+.h-resizer {
+  cursor: row-resize;
+  background: var(--pane-border);
+}
+.h-resizer:hover, .h-resizer.dragging { background: var(--accent); }
