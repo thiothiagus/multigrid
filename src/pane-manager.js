@@ -47,6 +47,18 @@ if (typeof require !== 'undefined') {
             }
           };
         }
+        const pokepediaDomain = /poke\.idleworld\.online/i;
+        if (pokepediaDomain.test(popupUrl)) {
+          if (logger) logger.info('popup', 'Pop-up Pokepedia permitido', { paneId: id, popupUrl });
+          return {
+            action: 'allow',
+            overrideBrowserWindowOptions: {
+              width: 800,
+              height: 600,
+              webPreferences: { partition, nodeIntegration: false, contextIsolation: true }
+            }
+          };
+        }
         view.webContents.loadURL(popupUrl);
         if (logger) logger.info('popup', 'Pop-up redirecionado para o painel', { paneId: id, popupUrl });
         return { action: 'deny' };
