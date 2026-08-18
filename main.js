@@ -77,11 +77,15 @@ ipcMain.handle('back-pane', (event, id) => {
 
 ipcMain.on('sync-layout', (event, layout) => {
   if (!Array.isArray(layout)) return;
-  layout.forEach(({ id, x, y, width, height }) => {
-    const entry = panes.get(id);
-    if (!entry) return;
-    entry.bounds = { x, y, width, height };
-    if (entry.visible) entry.view.setBounds(entry.bounds);
+  const layoutMap = new Map(layout.map(item => [item.id, item]));
+  panes.forEach((entry, id) => {
+    const item = layoutMap.get(id);
+    if (item) {
+      entry.bounds = { x: item.x, y: item.y, width: item.width, height: item.height };
+      if (entry.visible) entry.view.setBounds(entry.bounds);
+    } else {
+      entry.view.setBounds({ x: 0, y: 0, width: 0, height: 0 });
+    }
   });
 });
 

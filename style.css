@@ -188,6 +188,13 @@ html, body {
 }
 .pane-header .actions button:hover { background: var(--accent); border-color: var(--accent); color: #fff; }
 .pane-header .actions button.close-btn:hover { background: var(--danger); border-color: var(--danger); }
+.pane-header .actions button.focus-btn.is-active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+/* Modo Foco */
+#grid-container.has-focused-pane .pane:not(.is-focused) { display: none !important; }
+#grid-container.has-focused-pane .v-resizer,
+#grid-container.has-focused-pane .h-resizer { display: none !important; }
+#grid-container.has-focused-pane .pane.is-focused { grid-column: 1 / -1 !important; grid-row: 1 / -1 !important; }
 
 .pane-body {
   flex: 1;

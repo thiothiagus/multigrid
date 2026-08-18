@@ -1,7 +1,7 @@
 ---
 id: task-012
 title: Maximizar painel individual (modo foco)
-status: todo
+status: done
 priority: high
 created_at: 2026-08-15
 ---

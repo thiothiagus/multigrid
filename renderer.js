@@ -3,6 +3,7 @@
 let state = { panes: [] };
 let persistTimer = null;
 let syncScheduled = false;
+let focusedPaneId = null;
 
 function persist() {
   clearTimeout(persistTimer);
@@ -24,6 +25,40 @@ function syncLayoutToMain() {
     const rects = calculatePaneLayout(document.getElementById('grid-container'));
     window.api.syncLayout(rects);
   });
+}
+
+function toggleFocusPane(id) {
+  if (focusedPaneId === id) {
+    focusedPaneId = null;
+  } else {
+    focusedPaneId = id;
+  }
+  updateFocusState();
+}
+
+function updateFocusState() {
+  const gridEl = document.getElementById('grid-container');
+  if (!gridEl) return;
+  if (focusedPaneId !== null && state.panes.some((p) => p.id === focusedPaneId)) {
+    gridEl.classList.add('has-focused-pane');
+  } else {
+    focusedPaneId = null;
+    gridEl.classList.remove('has-focused-pane');
+  }
+
+  gridEl.querySelectorAll('.pane').forEach((paneEl) => {
+    const pId = Number(paneEl.dataset.id || paneEl.getAttribute('data-id'));
+    const isFocused = pId === focusedPaneId;
+    paneEl.classList.toggle('is-focused', isFocused);
+    const focusBtn = paneEl.querySelector('.focus-btn');
+    if (focusBtn) {
+      focusBtn.classList.toggle('is-active', isFocused);
+      focusBtn.title = isFocused ? 'Restaurar grid (Sair do Foco)' : 'Focar painel (Modo Foco)';
+      focusBtn.textContent = isFocused ? '\u2922' : '\u26F6';
+    }
+  });
+
+  syncLayoutToMain();
 }
 
 // ---------------------------------------------------------------------
@@ -79,6 +114,9 @@ async function addPane() {
 }
 
 async function removePane(id) {
+  if (focusedPaneId === id) {
+    focusedPaneId = null;
+  }
   state.panes = state.panes.filter((p) => p.id !== id);
   await window.api.removePane(id);
 
@@ -157,6 +195,11 @@ function createPaneElement(pane) {
     if (fromId !== pane.id) movePane(fromId, pane.id);
   });
 
+  header.addEventListener('dblclick', (e) => {
+    if (e.target.closest('button') || e.target.closest('.label')) return;
+    toggleFocusPane(pane.id);
+  });
+
   const labelWrap = document.createElement('div');
   labelWrap.className = 'label-wrap';
 
@@ -192,6 +235,12 @@ function createPaneElement(pane) {
   reloadBtn.textContent = '\u21BB';
   reloadBtn.title = 'Recarregar';
 
+  const isFocused = pane.id === focusedPaneId;
+  const focusBtn = document.createElement('button');
+  focusBtn.textContent = isFocused ? '\u2922' : '\u26F6';
+  focusBtn.title = isFocused ? 'Restaurar grid (Sair do Foco)' : 'Focar painel (Modo Foco)';
+  focusBtn.className = isFocused ? 'focus-btn is-active' : 'focus-btn';
+
   const clearBtn = document.createElement('button');
   clearBtn.textContent = '\u232B'; // "⌫" (apagar)
   clearBtn.title = 'Limpar dados desta conta (reset do login)';
@@ -203,6 +252,7 @@ function createPaneElement(pane) {
 
   actions.appendChild(backBtn);
   actions.appendChild(reloadBtn);
+  actions.appendChild(focusBtn);
   actions.appendChild(clearBtn);
   actions.appendChild(closeBtn);
 
@@ -227,6 +277,7 @@ function createPaneElement(pane) {
 
   reloadBtn.addEventListener('click', () => window.api.reloadPane(pane.id));
   backBtn.addEventListener('click', () => window.api.backPane(pane.id));
+  focusBtn.addEventListener('click', () => toggleFocusPane(pane.id));
   clearBtn.addEventListener('click', () => {
     if (window.confirm('Limpar todos os dados (login, cookies, cache) desta conta? O painel será recarregado.')) {
       window.api.clearPaneData(pane.id);
@@ -388,7 +439,7 @@ function render() {
     gridEl.appendChild(r);
   }
 
-  syncLayoutToMain();
+  updateFocusState();
 }
 
 // ---------------------------------------------------------------------
