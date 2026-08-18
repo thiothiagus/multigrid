@@ -1,5 +1,14 @@
 # AGENTS.md
 
+## Contexto do Projeto
+
+**Multi-Conta Grid** é um aplicativo Electron para gerenciar múltiplas sessões/contas simultâneas em uma grade flexível dentro de uma única janela, com sessões isoladas (`persist:session_<id>`), divisórias arrastáveis e recuperação automática de travamentos.
+
+- **Stack**: Electron, Node.js, JavaScript, HTML/CSS.
+- **Componentes**: `main.js` (processo principal e gerenciamento de WebContentsView), `renderer.js` (interface e controle do grid), `preload.js` (ponte IPC segura), `logger.js` (logs do sistema em `logs/errors.jsonl`), `src/` (módulos e utilitários).
+
+---
+
 Este projeto usa o Riteward para governança de workflow e qualidade.
 
 ## Como trabalhar neste projeto
@@ -8,7 +17,7 @@ Antes de qualquer alteração, entenda o contexto:
 
 1. Leia `.riteward/constitution.md` para conhecer as regras e políticas.
 2. Execute `riteward status` para ver o estado atual do projeto, tarefas e workflows ativos.
-3. Verifique se há uma tarefa atribuída com `riteward task list`.
+3. Verifique se há uma tarefa atribuída com `riteward task list`. Se precisar de detalhes sobre uma tarefa, use `riteward task show <task-id>`.
 
 ## Fluxo de trabalho
 
