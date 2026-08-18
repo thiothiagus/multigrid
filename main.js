@@ -1,6 +1,7 @@
 const { app, BrowserWindow, BrowserView, ipcMain, Menu, dialog, screen } = require('electron');
 const path = require('path');
 const fs = require('fs');
+const logger = require('./logger');
 
 const CONFIG_PATH = () => path.join(app.getPath('userData'), 'multiconta-config.json');
 const WIN_STATE_PATH = () => path.join(app.getPath('userData'), 'window-state.json');
@@ -20,7 +21,9 @@ function loadWinState() {
     if (saved && typeof saved.width === 'number' && typeof saved.height === 'number') {
       winState = { ...winState, ...saved };
     }
-  } catch (e) { /* primeira execucao ou arquivo corrompido: usa o padrao */ }
+  } catch (e) {
+    if (e.code !== 'ENOENT') logger.warn('io', 'Falha ao carregar window state', { error: e.message });
+  }
 }
 
 // Se a posicao salva caiu fora de todos os monitores (ex.: mudou o setup),
@@ -48,7 +51,9 @@ function saveWinState() {
   winState = { ...win.getBounds(), isMaximized: win.isMaximized() };
   try {
     fs.writeFileSync(WIN_STATE_PATH(), JSON.stringify(winState, null, 2), 'utf-8');
-  } catch (e) { /* nao critico: janela em si ja voltou a abrir */ }
+  } catch (e) {
+    logger.warn('io', 'Falha ao salvar window state', { error: e.message });
+  }
 }
 
 function scheduleSaveWinState() {
@@ -115,6 +120,7 @@ function scheduleRetry(id, fromCrash) {
   if (!entry || entry.retryTimer) return;
   entry.retryCount = (entry.retryCount || 0) + 1;
   if (entry.retryCount > 6) {
+    logger.error('pane', 'Retry exaurido, painel desistiu de reconectar', { paneId: id });
     sendStatus(id, 'error-final');
     return;
   }
@@ -125,7 +131,9 @@ function scheduleRetry(id, fromCrash) {
     if (!e2) return;
     e2.retryTimer = null;
     if (fromCrash) showPaneView(e2);
-    try { e2.view.webContents.reload(); } catch (err) { /* view pode ja ter sido removida */ }
+    try { e2.view.webContents.reload(); } catch (err) {
+      logger.error('pane', 'Falha ao recarregar painel no retry', { paneId: id, error: err.message });
+    }
   }, delay);
 }
 
@@ -150,11 +158,13 @@ ipcMain.handle('create-pane', (event, { id, partition, url }) => {
   // bloqueia outros pop-ups (anuncios, etc.) carregando-os no proprio painel.
   view.webContents.setWindowOpenHandler(({ url: popupUrl }) => {
     if (!popupUrl || !/^https?:/i.test(popupUrl)) {
+      logger.info('popup', 'Pop-up bloqueado (URL invalida)', { paneId: id, popupUrl });
       return { action: 'deny' };
     }
     // Lista de domínios de autenticacao conhecidos (OAuth providers)
     const authDomains = /accounts\.google\.com|discord\.com\/oauth2|facebook\.com\/dialog|github\.com\/login/i;
     if (authDomains.test(popupUrl)) {
+      logger.info('popup', 'Pop-up OAuth permitido', { paneId: id, popupUrl });
       // Permite janela nativa para OAuth (mesma partition, sem barra de navegacao)
       return {
         action: 'allow',
@@ -167,6 +177,7 @@ ipcMain.handle('create-pane', (event, { id, partition, url }) => {
     }
     // Outros pop-ups: carrega no proprio painel (bloqueia janela extra)
     view.webContents.loadURL(popupUrl);
+    logger.info('popup', 'Pop-up redirecionado para o painel', { paneId: id, popupUrl });
     return { action: 'deny' };
   });
 
@@ -179,11 +190,13 @@ ipcMain.handle('create-pane', (event, { id, partition, url }) => {
     sendStatus(id, 'ok');
   });
   view.webContents.on('did-fail-load', (e, errorCode) => {
-    if (errorCode === -3) return; // ERR_ABORTED (navegacao cancelada, ignora)
+    if (errorCode === -3) return;
+    logger.error('pane', 'Falha ao carregar pagina', { paneId: id, errorCode });
     sendStatus(id, 'error');
     scheduleRetry(id, false);
   });
   view.webContents.on('render-process-gone', (e, details) => {
+    logger.error('crash', 'Render process do painel crashou', { paneId: id, reason: details && details.reason });
     hidePaneView(entry);
     sendStatus(id, 'crashed', { reason: details && details.reason });
     scheduleRetry(id, true);
@@ -196,7 +209,9 @@ ipcMain.handle('remove-pane', (event, id) => {
   const entry = panes.get(id);
   if (!entry) return false;
   if (entry.retryTimer) clearTimeout(entry.retryTimer);
-  try { win.removeBrowserView(entry.view); } catch (err) { /* ignore */ }
+  try { win.removeBrowserView(entry.view); } catch (err) {
+    logger.warn('pane', 'Falha ao remover BrowserView', { paneId: id, error: err.message });
+  }
   panes.delete(id);
   return true;
 });
@@ -207,7 +222,9 @@ ipcMain.handle('reload-pane', (event, id) => {
   entry.retryCount = 0;
   if (entry.retryTimer) { clearTimeout(entry.retryTimer); entry.retryTimer = null; }
   showPaneView(entry);
-  try { entry.view.webContents.reload(); } catch (err) { /* ignore */ }
+  try { entry.view.webContents.reload(); } catch (err) {
+    logger.warn('pane', 'Falha ao recarregar painel', { paneId: id, error: err.message });
+  }
   return true;
 });
 
@@ -249,7 +266,7 @@ ipcMain.handle('save-config', (event, config) => {
     fs.writeFileSync(CONFIG_PATH(), JSON.stringify(config, null, 2), 'utf-8');
     return true;
   } catch (e) {
-    console.error('Falha ao salvar configuracao:', e);
+    logger.error('io', 'Falha ao salvar configuracao', { error: e.message });
     return false;
   }
 });
@@ -269,7 +286,7 @@ ipcMain.handle('clear-pane-data', async (event, id) => {
     entry.view.webContents.reload();
     return true;
   } catch (e) {
-    console.error('Falha ao limpar dados da conta', id, e);
+    logger.error('ipc', 'Falha ao limpar dados da conta', { paneId: id, error: e.message });
     return false;
   }
 });
@@ -286,7 +303,7 @@ ipcMain.handle('export-config', async () => {
     fs.writeFileSync(filePath, raw, 'utf-8');
     return { ok: true, path: filePath };
   } catch (e) {
-    console.error('Falha ao exportar configuração:', e);
+    logger.error('io', 'Falha ao exportar configuracao', { error: e.message });
     return { ok: false, reason: 'error' };
   }
 });
@@ -308,6 +325,8 @@ ipcMain.handle('import-config', async () => {
 });
 
 app.whenReady().then(() => {
+  logger.init(app.getPath('userData'), app.isPackaged);
+  logger.info('app', 'Aplicacao iniciada', { version: '2.1.0' });
   Menu.setApplicationMenu(null);
   createWindow();
 

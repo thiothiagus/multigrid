@@ -1,0 +1,28 @@
+version: "1"
+project:
+  name: "multi-conta-grid"
+  language: "node"
+  packageManager: "npm"
+  scripts:
+    test: null
+    lint: null
+    typecheck: null
+workflow:
+  default: feature
+quality_gates: []
+permissions:
+  push: false
+  commit: false
+
+logs:
+  files:
+    - path: logs/errors.jsonl
+  ignore_patterns:
+    - "Aplicacao iniciada"
+
+# refactor:
+#   max_lines: 500
+#   ignore_dirs:
+#     - "node_modules"
+#     - "dist"
+#     - ".git"

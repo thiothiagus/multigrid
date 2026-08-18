@@ -17,6 +17,7 @@
     "directories": { "output": "dist" },
     "files": [
       "main.js",
+      "logger.js",
       "preload.js",
       "index.html",
       "renderer.js",
