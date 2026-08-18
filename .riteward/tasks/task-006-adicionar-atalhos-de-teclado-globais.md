@@ -1,10 +1,12 @@
-# Task-006: Adicionar atalhos de teclado globais
+---
+id: task-006
+title: Adicionar atalhos de teclado globais
+status: todo
+priority: low
+created_at: 2026-08-15
+---
 
-- **id:** task-006
-- **título:** Adicionar atalhos de teclado globais
-- **status:** todo
-- **prioridade:** medium
-- **criado em:** 2026-08-15
+# Adicionar atalhos de teclado globais
 
 ## Descrição
 

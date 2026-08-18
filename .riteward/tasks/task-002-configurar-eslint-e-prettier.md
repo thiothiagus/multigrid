@@ -1,10 +1,12 @@
-# Task-002: Configurar ESLint e Prettier
+---
+id: task-002
+title: Configurar ESLint e Prettier
+status: todo
+priority: high
+created_at: 2026-08-15
+---
 
-- **id:** task-002
-- **título:** Configurar ESLint e Prettier
-- **status:** todo
-- **prioridade:** high
-- **criado em:** 2026-08-15
+# Configurar ESLint e Prettier
 
 ## Descrição
 
@@ -16,7 +18,7 @@ Adicionar ESLint com regras recomendadas para Electron/Node e Prettier para form
 - [ ] Prettier instalado e configurado
 - [ ] eslint-config-prettier integrado para evitar conflitos
 - [ ] Scripts npm run lint e npm run format adicionados ao package.json
-- [ ]npm run lint executa sem erros no código atual
+- [ ] npm run lint executa sem erros no código atual
 - [ ] .eslintrc/.prettierrc commitados
 
 ## Notas

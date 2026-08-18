@@ -1,10 +1,12 @@
-# Task-003: Adicionar testes automatizados
+---
+id: task-003
+title: Adicionar testes automatizados
+status: todo
+priority: high
+created_at: 2026-08-15
+---
 
-- **id:** task-003
-- **título:** Adicionar testes automatizados
-- **status:** todo
-- **prioridade:** high
-- **criado em:** 2026-08-15
+# Adicionar testes automatizados
 
 ## Descrição
 

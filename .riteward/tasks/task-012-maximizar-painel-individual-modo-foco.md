@@ -1,10 +1,12 @@
-# Task-012: Maximizar painel individual (modo foco)
+---
+id: task-012
+title: Maximizar painel individual (modo foco)
+status: todo
+priority: high
+created_at: 2026-08-15
+---
 
-- **id:** task-012
-- **título:** Maximizar painel individual (modo foco)
-- **status:** todo
-- **prioridade:** medium
-- **criado em:** 2026-08-15
+# Maximizar painel individual (modo foco)
 
 ## Descrição
 

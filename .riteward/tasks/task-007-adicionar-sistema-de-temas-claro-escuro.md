@@ -1,10 +1,12 @@
-# Task-007: Adicionar sistema de temas (claro/escuro)
+---
+id: task-007
+title: Adicionar sistema de temas (claro/escuro)
+status: todo
+priority: low
+created_at: 2026-08-15
+---
 
-- **id:** task-007
-- **título:** Adicionar sistema de temas (claro/escuro)
-- **status:** todo
-- **prioridade:** medium
-- **criado em:** 2026-08-15
+# Adicionar sistema de temas (claro/escuro)
 
 ## Descrição
 
@@ -15,7 +17,7 @@ Adicionar suporte a tema claro além do tema escuro atual. Criar toggle na toolb
 - [ ] Paleta de tema claro definida em CSS variables
 - [ ] Toggle de tema na toolbar (sol/lua)
 - [ ] Preferência persistida no config
-- [ ] Detecção automática do tema do SO na primeira execuçãof
+- [ ] Detecção automática do tema do SO na primeira execução
 - [ ] Tema aplicado em toolbar, setup-screen, headers dos panes e gutters
 
 ## Notas

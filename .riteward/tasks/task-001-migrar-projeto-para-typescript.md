@@ -1,10 +1,12 @@
-# Task-001: Migrar projeto para TypeScript
+---
+id: task-001
+title: Migrar projeto para TypeScript
+status: todo
+priority: high
+created_at: 2026-08-15
+---
 
-- **id:** task-001
-- **título:** Migrar projeto para TypeScript
-- **status:** todo
-- **prioridade:** high
-- **criado em:** 2026-08-15
+# Migrar projeto para TypeScript
 
 ## Descrição
 

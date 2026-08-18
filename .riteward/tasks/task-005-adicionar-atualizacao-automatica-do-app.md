@@ -1,10 +1,12 @@
-# Task-005: Adicionar atualização automática do app
+---
+id: task-005
+title: Adicionar atualização automática do app
+status: todo
+priority: low
+created_at: 2026-08-15
+---
 
-- **id:** task-005
-- **título:** Adicionar atualização automática do app
-- **status:** todo
-- **prioridade:** medium
-- **criado em:** 2026-08-15
+# Adicionar atualização automática do app
 
 ## Descrição
 
