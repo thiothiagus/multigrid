@@ -1,7 +1,7 @@
 ---
 id: task-011
 title: Corrigir abertura de links externos dentro do jogo (pokepedia)
-status: todo
+status: in_progress
 priority: high
 created_at: 2026-08-15
 ---
