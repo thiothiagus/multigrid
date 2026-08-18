@@ -1,0 +1,149 @@
+import { app, BrowserWindow, ipcMain, dialog, screen } from 'electron';
+import path from 'path';
+import fs from 'fs';
+import * as logger from './logger';
+import { getWinStatePath, loadWinState, ensureVisibleBounds, saveWinState, scheduleSaveWinState } from './src/win-state';
+import { getConfigPath, loadConfig, saveConfig } from './src/config';
+import { scheduleRetry } from './src/retry';
+import { showPaneView, createPaneView, removePaneView, reloadPaneView, backPaneView, clearPaneDataView } from './src/pane-manager';
+import { PaneEntry } from './src/types';
+
+let win: BrowserWindow | null = null;
+const panes = new Map<number, PaneEntry>();
+
+function sendStatus(id: number, status: string, extra?: any): void {
+  if (win && !win.isDestroyed()) {
+    win.webContents.send('pane-status', { id, status, extra });
+  }
+}
+
+function createWindow(): void {
+  const winStatePath = getWinStatePath(app.getPath('userData'));
+  const winState = loadWinState(winStatePath, logger);
+  const bounds = ensureVisibleBounds({
+    x: typeof winState.x === 'number' ? winState.x : undefined,
+    y: typeof winState.y === 'number' ? winState.y : undefined,
+    width: winState.width,
+    height: winState.height
+  }, screen);
+
+  const winOpts: any = {
+    width: bounds.width,
+    height: bounds.height,
+    title: 'Multi-Conta Grid',
+    icon: path.join(__dirname, 'build', 'icon.png'),
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.js'),
+      contextIsolation: true,
+      nodeIntegration: false,
+      sandbox: true
+    }
+  };
+  if (typeof bounds.x === 'number') { winOpts.x = bounds.x; winOpts.y = bounds.y; }
+  win = new BrowserWindow(winOpts);
+
+  win.on('resize', () => { if (win) scheduleSaveWinState(win, winStatePath, logger); });
+  win.on('move', () => { if (win) scheduleSaveWinState(win, winStatePath, logger); });
+  win.on('close', () => { if (win) saveWinState(win, winStatePath, logger); });
+
+  if (winState.isMaximized) win.maximize();
+
+  win.loadFile('index.html');
+}
+
+ipcMain.handle('create-pane', (event, { id, partition, url }) => {
+  return createPaneView({
+    win,
+    panes,
+    id,
+    partition,
+    url,
+    logger,
+    sendStatus,
+    scheduleRetry: (paneId: number, fromCrash: boolean) => scheduleRetry({ panes, id: paneId, fromCrash, logger, sendStatus, showPaneView })
+  });
+});
+
+ipcMain.handle('remove-pane', (event, id: number) => {
+  return removePaneView({ win, panes, id, logger });
+});
+
+ipcMain.handle('reload-pane', (event, id: number) => {
+  return reloadPaneView({ panes, id, logger });
+});
+
+ipcMain.handle('back-pane', (event, id: number) => {
+  return backPaneView({ panes, id });
+});
+
+ipcMain.on('sync-layout', (event, layout: any[]) => {
+  if (!Array.isArray(layout)) return;
+  const layoutMap = new Map(layout.map(item => [item.id, item]));
+  panes.forEach((entry, id) => {
+    const item = layoutMap.get(id);
+    if (item) {
+      entry.bounds = { x: item.x, y: item.y, width: item.width, height: item.height };
+      if (entry.visible) entry.view.setBounds(entry.bounds);
+    } else {
+      entry.view.setBounds({ x: 0, y: 0, width: 0, height: 0 });
+    }
+  });
+});
+
+ipcMain.handle('load-config', () => {
+  return loadConfig(getConfigPath(app.getPath('userData')));
+});
+
+ipcMain.handle('save-config', (event, config: any) => {
+  return saveConfig(getConfigPath(app.getPath('userData')), config, logger);
+});
+
+ipcMain.handle('clear-pane-data', (event, id: number) => {
+  return clearPaneDataView({ panes, id, logger });
+});
+
+ipcMain.handle('export-config', async () => {
+  try {
+    const raw = fs.readFileSync(getConfigPath(app.getPath('userData')), 'utf-8');
+    if (!win) return { ok: false, reason: 'no-window' };
+    const { canceled, filePath } = await dialog.showSaveDialog(win, {
+      title: 'Exportar configuração (backup)',
+      defaultPath: 'multiconta-config.json',
+      filters: [{ name: 'JSON', extensions: ['json'] }]
+    });
+    if (canceled || !filePath) return { ok: false, reason: 'canceled' };
+    fs.writeFileSync(filePath, raw, 'utf-8');
+    return { ok: true, path: filePath };
+  } catch (e: any) {
+    logger.error('io', 'Falha ao exportar configuracao', { error: e.message });
+    return { ok: false, reason: 'error' };
+  }
+});
+
+ipcMain.handle('import-config', async () => {
+  try {
+    if (!win) return null;
+    const { canceled, filePaths } = await dialog.showOpenDialog(win, {
+      title: 'Importar configuração (backup)',
+      properties: ['openFile'],
+      filters: [{ name: 'JSON', extensions: ['json'] }]
+    });
+    if (canceled || !filePaths || !filePaths[0]) return null;
+    const config = JSON.parse(fs.readFileSync(filePaths[0], 'utf-8'));
+    if (!config || !Array.isArray(config.panes) || config.panes.length === 0) return null;
+    return config;
+  } catch (e) {
+    return null;
+  }
+});
+
+app.whenReady().then(() => {
+  createWindow();
+  app.on('activate', () => {
+    if (BrowserWindow.getAllWindows().length === 0) createWindow();
+  });
+});
+
+app.on('window-all-closed', () => {
+  if (process.platform !== 'darwin') app.quit();
+});

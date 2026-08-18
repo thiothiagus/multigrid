@@ -4,17 +4,22 @@
   "description": "Grade flexivel de contas em uma unica janela, com sessoes isoladas, divisorias arrastaveis e recuperacao automatica de travamentos",
   "main": "main.js",
   "scripts": {
-    "start": "electron .",
-    "dist": "electron-builder"
+    "build": "tsc",
+    "start": "npm run build && electron .",
+    "dist": "npm run build && electron-builder"
   },
   "devDependencies": {
+    "@types/node": "^26.2.0",
     "electron": "^31.0.0",
-    "electron-builder": "^24.13.3"
+    "electron-builder": "^24.13.3",
+    "typescript": "^7.0.2"
   },
   "build": {
     "appId": "com.usuario.multicontagrid",
     "productName": "Multi-Conta Grid",
-    "directories": { "output": "dist" },
+    "directories": {
+      "output": "dist"
+    },
     "files": [
       "main.js",
       "logger.js",
