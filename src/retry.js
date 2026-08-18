@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.scheduleRetry = scheduleRetry;
 exports.cancelRetry = cancelRetry;
-function scheduleRetry({ panes, id, fromCrash, logger, sendStatus, showPaneView }) {
+function scheduleRetry({ panes, id, fromCrash, logger, sendStatus, showPaneView, }) {
     const entry = panes.get(id);
     if (!entry || entry.retryTimer)
         return;
@@ -26,8 +26,12 @@ function scheduleRetry({ panes, id, fromCrash, logger, sendStatus, showPaneView 
             e2.view.webContents.reload();
         }
         catch (err) {
+            const e = err;
             if (logger)
-                logger.error('pane', 'Falha ao recarregar painel no retry', { paneId: id, error: err.message });
+                logger.error('pane', 'Falha ao recarregar painel no retry', {
+                    paneId: id,
+                    error: e.message,
+                });
         }
     }, delay);
 }
@@ -40,6 +44,6 @@ function cancelRetry(entry) {
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = {
         scheduleRetry,
-        cancelRetry
+        cancelRetry,
     };
 }

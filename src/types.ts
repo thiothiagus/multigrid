@@ -1,3 +1,5 @@
+import { WebContentsView } from 'electron';
+
 export interface Pane {
   id: number;
   label: string;
@@ -46,7 +48,7 @@ export interface Logger {
 }
 
 export interface PaneEntry {
-  view: any;
+  view: WebContentsView;
   visible: boolean;
   bounds?: { x: number; y: number; width: number; height: number };
   retryTimer?: NodeJS.Timeout | null;

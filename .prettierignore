@@ -1,0 +1,10 @@
+dist/
+node_modules/
+.riteward/
+*.log
+*.tsbuildinfo
+*.js
+*.html
+*.md
+*.css
+tsconfig.json

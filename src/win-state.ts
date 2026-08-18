@@ -15,19 +15,29 @@ export function loadWinState(winStatePath: string, logger?: Logger): WinState {
     if (saved && typeof saved.width === 'number' && typeof saved.height === 'number') {
       winState = { ...winState, ...saved };
     }
-  } catch (e: any) {
-    if (e.code !== 'ENOENT' && logger) {
-      logger.warn('io', 'Falha ao carregar window state', { error: e.message });
+  } catch (e: unknown) {
+    const err = e as { code?: string; message?: string };
+    if (err.code !== 'ENOENT' && logger) {
+      logger.warn('io', 'Falha ao carregar window state', { error: err.message });
     }
   }
   return winState;
 }
 
-export function ensureVisibleBounds(bounds: any, screen: any): { x?: number; y?: number; width: number; height: number } {
-  const insideSomeDisplay = screen.getAllDisplays().some((d: any) => {
+export function ensureVisibleBounds(
+  bounds: { x?: number; y?: number; width: number; height: number },
+  screen: import('electron').Screen
+): { x?: number; y?: number; width: number; height: number } {
+  const insideSomeDisplay = screen.getAllDisplays().some(d => {
     const a = d.workArea;
-    return bounds.x >= a.x - 50 && bounds.y >= a.y - 50 &&
-           bounds.x < a.x + a.width && bounds.y < a.y + a.height;
+    return (
+      typeof bounds.x === 'number' &&
+      typeof bounds.y === 'number' &&
+      bounds.x >= a.x - 50 &&
+      bounds.y >= a.y - 50 &&
+      bounds.x < a.x + a.width &&
+      bounds.y < a.y + a.height
+    );
   });
   if (insideSomeDisplay) return bounds;
   const primary = screen.getPrimaryDisplay().workArea;
@@ -37,21 +47,30 @@ export function ensureVisibleBounds(bounds: any, screen: any): { x?: number; y?:
     x: Math.round(primary.x + (primary.width - width) / 2),
     y: Math.round(primary.y + (primary.height - height) / 2),
     width,
-    height
+    height,
   };
 }
 
-export function saveWinState(win: any, winStatePath: string, logger?: Logger): void {
+export function saveWinState(
+  win: import('electron').BrowserWindow | null,
+  winStatePath: string,
+  logger?: Logger
+): void {
   if (!win || win.isDestroyed()) return;
   winState = { ...win.getBounds(), isMaximized: win.isMaximized() };
   try {
     fs.writeFileSync(winStatePath, JSON.stringify(winState, null, 2), 'utf-8');
-  } catch (e: any) {
-    if (logger) logger.warn('io', 'Falha ao salvar window state', { error: e.message });
+  } catch (e: unknown) {
+    const err = e as Error;
+    if (logger) logger.warn('io', 'Falha ao salvar window state', { error: err.message });
   }
 }
 
-export function scheduleSaveWinState(win: any, winStatePath: string, logger?: Logger): void {
+export function scheduleSaveWinState(
+  win: import('electron').BrowserWindow | null,
+  winStatePath: string,
+  logger?: Logger
+): void {
   if (winStateTimer) clearTimeout(winStateTimer);
   winStateTimer = setTimeout(() => saveWinState(win, winStatePath, logger), 500);
 }
@@ -67,6 +86,6 @@ if (typeof module !== 'undefined' && module.exports) {
     ensureVisibleBounds,
     saveWinState,
     scheduleSaveWinState,
-    getWinState
+    getWinState,
   };
 }

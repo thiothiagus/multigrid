@@ -20,7 +20,9 @@ function init(userDataPath, isPackaged = false) {
         if (!fs_1.default.existsSync(logDir))
             fs_1.default.mkdirSync(logDir, { recursive: true });
     }
-    catch (_) { }
+    catch {
+        // ignorar falha ao criar diretorio de log
+    }
     process.on('uncaughtException', (err) => {
         error('uncaughtException', err.message, { stack: err.stack });
     });
@@ -36,12 +38,14 @@ function write(level, category, message, extra) {
         level,
         category,
         message,
-        ...extra
+        ...extra,
     };
     try {
         fs_1.default.appendFileSync(logFile, JSON.stringify(entry) + '\n');
     }
-    catch (_) { }
+    catch {
+        // ignorar erro ao gravar log no arquivo
+    }
 }
 function error(category, message, extra) {
     write('error', category, message, extra);

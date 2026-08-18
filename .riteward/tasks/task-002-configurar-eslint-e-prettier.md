@@ -1,7 +1,7 @@
 ---
 id: task-002
 title: Configurar ESLint e Prettier
-status: todo
+status: done
 priority: high
 created_at: 2026-08-15
 ---

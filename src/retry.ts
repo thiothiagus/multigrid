@@ -9,12 +9,20 @@ export interface ScheduleRetryOpts {
   showPaneView?: (entry: PaneEntry) => void;
 }
 
-export function scheduleRetry({ panes, id, fromCrash, logger, sendStatus, showPaneView }: ScheduleRetryOpts): void {
+export function scheduleRetry({
+  panes,
+  id,
+  fromCrash,
+  logger,
+  sendStatus,
+  showPaneView,
+}: ScheduleRetryOpts): void {
   const entry = panes.get(id);
   if (!entry || entry.retryTimer) return;
   entry.retryCount = (entry.retryCount || 0) + 1;
   if (entry.retryCount > 6) {
-    if (logger) logger.error('pane', 'Retry exaurido, painel desistiu de reconectar', { paneId: id });
+    if (logger)
+      logger.error('pane', 'Retry exaurido, painel desistiu de reconectar', { paneId: id });
     sendStatus(id, 'error-final');
     return;
   }
@@ -27,8 +35,13 @@ export function scheduleRetry({ panes, id, fromCrash, logger, sendStatus, showPa
     if (fromCrash && showPaneView) showPaneView(e2);
     try {
       e2.view.webContents.reload();
-    } catch (err: any) {
-      if (logger) logger.error('pane', 'Falha ao recarregar painel no retry', { paneId: id, error: err.message });
+    } catch (err: unknown) {
+      const e = err as Error;
+      if (logger)
+        logger.error('pane', 'Falha ao recarregar painel no retry', {
+          paneId: id,
+          error: e.message,
+        });
     }
   }, delay);
 }
@@ -43,6 +56,6 @@ export function cancelRetry(entry?: PaneEntry | null): void {
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     scheduleRetry,
-    cancelRetry
+    cancelRetry,
   };
 }

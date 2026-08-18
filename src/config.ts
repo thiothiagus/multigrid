@@ -12,7 +12,7 @@ export function loadConfig(configPath: string): Config | null {
   try {
     const raw = fs.readFileSync(configPath, 'utf-8');
     return JSON.parse(raw);
-  } catch (e) {
+  } catch {
     return null;
   }
 }
@@ -21,8 +21,9 @@ export function saveConfig(configPath: string, config: Config, logger?: Logger):
   try {
     fs.writeFileSync(configPath, JSON.stringify(config, null, 2), 'utf-8');
     return true;
-  } catch (e: any) {
-    if (logger) logger.error('io', 'Falha ao salvar configuracao', { error: e.message });
+  } catch (e: unknown) {
+    const err = e as Error;
+    if (logger) logger.error('io', 'Falha ao salvar configuracao', { error: err.message });
     return false;
   }
 }
@@ -34,7 +35,16 @@ export function computeGridDims(n: number): { cols: number; rows: number } {
 }
 
 export function normalizeState(saved: Partial<Config>): Config {
-  const st: any = { ...saved };
+  const st: Config = {
+    gameUrlDefault: DEFAULT_URL,
+    nextId: 1,
+    cols: 1,
+    rows: 1,
+    colFr: [1],
+    rowFr: [1],
+    panes: [],
+    ...saved,
+  };
   if (!Array.isArray(st.panes)) st.panes = [];
   st.panes = st.panes.filter((p: Pane) => p && typeof p.id === 'number');
   const dims = computeGridDims(st.panes.length);
@@ -53,7 +63,7 @@ export function normalizeState(saved: Partial<Config>): Config {
   st.panes.forEach((p: Pane) => {
     if (!p.label) p.label = 'Conta ' + p.id;
     if (!p.partition) p.partition = 'persist:conta' + p.id;
-    if (!p.url) p.url = st.gameUrlDefault;
+    if (!p.url) p.url = st.gameUrlDefault || DEFAULT_URL;
   });
   return st as Config;
 }
@@ -65,6 +75,6 @@ if (typeof module !== 'undefined' && module.exports) {
     loadConfig,
     saveConfig,
     computeGridDims,
-    normalizeState
+    normalizeState,
   };
 }

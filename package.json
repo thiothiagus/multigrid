@@ -6,13 +6,28 @@
   "scripts": {
     "build": "tsc",
     "start": "npm run build && electron .",
-    "dist": "npm run build && electron-builder"
+    "dist": "npm run build && electron-builder",
+    "lint": "eslint . --ext .ts",
+    "lint:fix": "eslint . --ext .ts --fix",
+    "format": "prettier --write \"**/*.{js,ts,json,css,html,md}\"",
+    "format:check": "prettier --check \"**/*.{js,ts,json,css,html,md}\""
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@types/node": "^26.2.0",
+    "@typescript-eslint/eslint-plugin": "^8.67.0",
+    "@typescript-eslint/parser": "^8.67.0",
     "electron": "^31.0.0",
     "electron-builder": "^24.13.3",
-    "typescript": "^7.0.2"
+    "eslint": "^10.8.1",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-html": "^8.1.4",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-prettier": "^5.5.6",
+    "eslint-plugin-react": "^7.37.5",
+    "globals": "^17.11.0",
+    "prettier": "^3.9.6",
+    "typescript": "^5.9.3"
   },
   "build": {
     "appId": "com.usuario.multicontagrid",
@@ -43,5 +58,6 @@
       "target": "AppImage",
       "icon": "build/icon.png"
     }
-  }
+  },
+  "type": "module"
 }

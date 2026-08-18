@@ -58,7 +58,7 @@ function createWindow() {
         x: typeof winState.x === 'number' ? winState.x : undefined,
         y: typeof winState.y === 'number' ? winState.y : undefined,
         width: winState.width,
-        height: winState.height
+        height: winState.height,
     }, electron_1.screen);
     const winOpts = {
         width: bounds.width,
@@ -69,20 +69,26 @@ function createWindow() {
             preload: path_1.default.join(__dirname, 'preload.js'),
             contextIsolation: true,
             nodeIntegration: false,
-            sandbox: true
-        }
+            sandbox: true,
+        },
     };
     if (typeof bounds.x === 'number') {
         winOpts.x = bounds.x;
         winOpts.y = bounds.y;
     }
     win = new electron_1.BrowserWindow(winOpts);
-    win.on('resize', () => { if (win)
-        (0, win_state_1.scheduleSaveWinState)(win, winStatePath, logger); });
-    win.on('move', () => { if (win)
-        (0, win_state_1.scheduleSaveWinState)(win, winStatePath, logger); });
-    win.on('close', () => { if (win)
-        (0, win_state_1.saveWinState)(win, winStatePath, logger); });
+    win.on('resize', () => {
+        if (win)
+            (0, win_state_1.scheduleSaveWinState)(win, winStatePath, logger);
+    });
+    win.on('move', () => {
+        if (win)
+            (0, win_state_1.scheduleSaveWinState)(win, winStatePath, logger);
+    });
+    win.on('close', () => {
+        if (win)
+            (0, win_state_1.saveWinState)(win, winStatePath, logger);
+    });
     if (winState.isMaximized)
         win.maximize();
     win.loadFile('index.html');
@@ -96,7 +102,7 @@ electron_1.ipcMain.handle('create-pane', (event, { id, partition, url }) => {
         url,
         logger,
         sendStatus,
-        scheduleRetry: (paneId, fromCrash) => (0, retry_1.scheduleRetry)({ panes, id: paneId, fromCrash, logger, sendStatus, showPaneView: pane_manager_1.showPaneView })
+        scheduleRetry: (paneId, fromCrash) => (0, retry_1.scheduleRetry)({ panes, id: paneId, fromCrash, logger, sendStatus, showPaneView: pane_manager_1.showPaneView }),
     });
 });
 electron_1.ipcMain.handle('remove-pane', (event, id) => {
@@ -108,7 +114,7 @@ electron_1.ipcMain.handle('reload-pane', (event, id) => {
 electron_1.ipcMain.handle('back-pane', (event, id) => {
     return (0, pane_manager_1.backPaneView)({ panes, id });
 });
-electron_1.ipcMain.on('sync-layout', (event, layout) => {
+electron_1.ipcMain.on('sync-layout', (_event, layout) => {
     if (!Array.isArray(layout))
         return;
     const layoutMap = new Map(layout.map(item => [item.id, item]));
@@ -127,7 +133,7 @@ electron_1.ipcMain.on('sync-layout', (event, layout) => {
 electron_1.ipcMain.handle('load-config', () => {
     return (0, config_1.loadConfig)((0, config_1.getConfigPath)(electron_1.app.getPath('userData')));
 });
-electron_1.ipcMain.handle('save-config', (event, config) => {
+electron_1.ipcMain.handle('save-config', (_event, config) => {
     return (0, config_1.saveConfig)((0, config_1.getConfigPath)(electron_1.app.getPath('userData')), config, logger);
 });
 electron_1.ipcMain.handle('clear-pane-data', (event, id) => {
@@ -141,7 +147,7 @@ electron_1.ipcMain.handle('export-config', async () => {
         const { canceled, filePath } = await electron_1.dialog.showSaveDialog(win, {
             title: 'Exportar configuração (backup)',
             defaultPath: 'multiconta-config.json',
-            filters: [{ name: 'JSON', extensions: ['json'] }]
+            filters: [{ name: 'JSON', extensions: ['json'] }],
         });
         if (canceled || !filePath)
             return { ok: false, reason: 'canceled' };
@@ -149,7 +155,8 @@ electron_1.ipcMain.handle('export-config', async () => {
         return { ok: true, path: filePath };
     }
     catch (e) {
-        logger.error('io', 'Falha ao exportar configuracao', { error: e.message });
+        const err = e;
+        logger.error('io', 'Falha ao exportar configuracao', { error: err.message });
         return { ok: false, reason: 'error' };
     }
 });
@@ -160,7 +167,7 @@ electron_1.ipcMain.handle('import-config', async () => {
         const { canceled, filePaths } = await electron_1.dialog.showOpenDialog(win, {
             title: 'Importar configuração (backup)',
             properties: ['openFile'],
-            filters: [{ name: 'JSON', extensions: ['json'] }]
+            filters: [{ name: 'JSON', extensions: ['json'] }],
         });
         if (canceled || !filePaths || !filePaths[0])
             return null;
@@ -169,7 +176,7 @@ electron_1.ipcMain.handle('import-config', async () => {
             return null;
         return config;
     }
-    catch (e) {
+    catch {
         return null;
     }
 });

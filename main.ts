@@ -2,16 +2,29 @@ import { app, BrowserWindow, ipcMain, dialog, screen } from 'electron';
 import path from 'path';
 import fs from 'fs';
 import * as logger from './logger';
-import { getWinStatePath, loadWinState, ensureVisibleBounds, saveWinState, scheduleSaveWinState } from './src/win-state';
+import {
+  getWinStatePath,
+  loadWinState,
+  ensureVisibleBounds,
+  saveWinState,
+  scheduleSaveWinState,
+} from './src/win-state';
 import { getConfigPath, loadConfig, saveConfig } from './src/config';
 import { scheduleRetry } from './src/retry';
-import { showPaneView, createPaneView, removePaneView, reloadPaneView, backPaneView, clearPaneDataView } from './src/pane-manager';
+import {
+  showPaneView,
+  createPaneView,
+  removePaneView,
+  reloadPaneView,
+  backPaneView,
+  clearPaneDataView,
+} from './src/pane-manager';
 import { PaneEntry } from './src/types';
 
 let win: BrowserWindow | null = null;
 const panes = new Map<number, PaneEntry>();
 
-function sendStatus(id: number, status: string, extra?: any): void {
+function sendStatus(id: number, status: string, extra?: Record<string, unknown>): void {
   if (win && !win.isDestroyed()) {
     win.webContents.send('pane-status', { id, status, extra });
   }
@@ -20,14 +33,17 @@ function sendStatus(id: number, status: string, extra?: any): void {
 function createWindow(): void {
   const winStatePath = getWinStatePath(app.getPath('userData'));
   const winState = loadWinState(winStatePath, logger);
-  const bounds = ensureVisibleBounds({
-    x: typeof winState.x === 'number' ? winState.x : undefined,
-    y: typeof winState.y === 'number' ? winState.y : undefined,
-    width: winState.width,
-    height: winState.height
-  }, screen);
+  const bounds = ensureVisibleBounds(
+    {
+      x: typeof winState.x === 'number' ? winState.x : undefined,
+      y: typeof winState.y === 'number' ? winState.y : undefined,
+      width: winState.width,
+      height: winState.height,
+    },
+    screen
+  );
 
-  const winOpts: any = {
+  const winOpts: Partial<import('electron').BrowserWindowConstructorOptions> = {
     width: bounds.width,
     height: bounds.height,
     title: 'Multi-Conta Grid',
@@ -36,15 +52,24 @@ function createWindow(): void {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
       nodeIntegration: false,
-      sandbox: true
-    }
+      sandbox: true,
+    },
   };
-  if (typeof bounds.x === 'number') { winOpts.x = bounds.x; winOpts.y = bounds.y; }
+  if (typeof bounds.x === 'number') {
+    winOpts.x = bounds.x;
+    winOpts.y = bounds.y;
+  }
   win = new BrowserWindow(winOpts);
 
-  win.on('resize', () => { if (win) scheduleSaveWinState(win, winStatePath, logger); });
-  win.on('move', () => { if (win) scheduleSaveWinState(win, winStatePath, logger); });
-  win.on('close', () => { if (win) saveWinState(win, winStatePath, logger); });
+  win.on('resize', () => {
+    if (win) scheduleSaveWinState(win, winStatePath, logger);
+  });
+  win.on('move', () => {
+    if (win) scheduleSaveWinState(win, winStatePath, logger);
+  });
+  win.on('close', () => {
+    if (win) saveWinState(win, winStatePath, logger);
+  });
 
   if (winState.isMaximized) win.maximize();
 
@@ -60,7 +85,8 @@ ipcMain.handle('create-pane', (event, { id, partition, url }) => {
     url,
     logger,
     sendStatus,
-    scheduleRetry: (paneId: number, fromCrash: boolean) => scheduleRetry({ panes, id: paneId, fromCrash, logger, sendStatus, showPaneView })
+    scheduleRetry: (paneId: number, fromCrash: boolean) =>
+      scheduleRetry({ panes, id: paneId, fromCrash, logger, sendStatus, showPaneView }),
   });
 });
 
@@ -76,25 +102,28 @@ ipcMain.handle('back-pane', (event, id: number) => {
   return backPaneView({ panes, id });
 });
 
-ipcMain.on('sync-layout', (event, layout: any[]) => {
-  if (!Array.isArray(layout)) return;
-  const layoutMap = new Map(layout.map(item => [item.id, item]));
-  panes.forEach((entry, id) => {
-    const item = layoutMap.get(id);
-    if (item) {
-      entry.bounds = { x: item.x, y: item.y, width: item.width, height: item.height };
-      if (entry.visible) entry.view.setBounds(entry.bounds);
-    } else {
-      entry.view.setBounds({ x: 0, y: 0, width: 0, height: 0 });
-    }
-  });
-});
+ipcMain.on(
+  'sync-layout',
+  (_event, layout: Array<{ id: number; x: number; y: number; width: number; height: number }>) => {
+    if (!Array.isArray(layout)) return;
+    const layoutMap = new Map(layout.map(item => [item.id, item]));
+    panes.forEach((entry, id) => {
+      const item = layoutMap.get(id);
+      if (item) {
+        entry.bounds = { x: item.x, y: item.y, width: item.width, height: item.height };
+        if (entry.visible) entry.view.setBounds(entry.bounds);
+      } else {
+        entry.view.setBounds({ x: 0, y: 0, width: 0, height: 0 });
+      }
+    });
+  }
+);
 
 ipcMain.handle('load-config', () => {
   return loadConfig(getConfigPath(app.getPath('userData')));
 });
 
-ipcMain.handle('save-config', (event, config: any) => {
+ipcMain.handle('save-config', (_event, config: Parameters<typeof saveConfig>[1]) => {
   return saveConfig(getConfigPath(app.getPath('userData')), config, logger);
 });
 
@@ -109,13 +138,14 @@ ipcMain.handle('export-config', async () => {
     const { canceled, filePath } = await dialog.showSaveDialog(win, {
       title: 'Exportar configuração (backup)',
       defaultPath: 'multiconta-config.json',
-      filters: [{ name: 'JSON', extensions: ['json'] }]
+      filters: [{ name: 'JSON', extensions: ['json'] }],
     });
     if (canceled || !filePath) return { ok: false, reason: 'canceled' };
     fs.writeFileSync(filePath, raw, 'utf-8');
     return { ok: true, path: filePath };
-  } catch (e: any) {
-    logger.error('io', 'Falha ao exportar configuracao', { error: e.message });
+  } catch (e: unknown) {
+    const err = e as Error;
+    logger.error('io', 'Falha ao exportar configuracao', { error: err.message });
     return { ok: false, reason: 'error' };
   }
 });
@@ -126,13 +156,13 @@ ipcMain.handle('import-config', async () => {
     const { canceled, filePaths } = await dialog.showOpenDialog(win, {
       title: 'Importar configuração (backup)',
       properties: ['openFile'],
-      filters: [{ name: 'JSON', extensions: ['json'] }]
+      filters: [{ name: 'JSON', extensions: ['json'] }],
     });
     if (canceled || !filePaths || !filePaths[0]) return null;
     const config = JSON.parse(fs.readFileSync(filePaths[0], 'utf-8'));
     if (!config || !Array.isArray(config.panes) || config.panes.length === 0) return null;
     return config;
-  } catch (e) {
+  } catch {
     return null;
   }
 });

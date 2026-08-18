@@ -14,5 +14,5 @@ electron_1.contextBridge.exposeInMainWorld('api', {
     syncLayout: (layout) => electron_1.ipcRenderer.send('sync-layout', layout),
     onPaneStatus: (callback) => {
         electron_1.ipcRenderer.on('pane-status', (_event, data) => callback(data));
-    }
+    },
 });

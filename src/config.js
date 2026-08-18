@@ -20,7 +20,7 @@ function loadConfig(configPath) {
         const raw = fs_1.default.readFileSync(configPath, 'utf-8');
         return JSON.parse(raw);
     }
-    catch (e) {
+    catch {
         return null;
     }
 }
@@ -30,8 +30,9 @@ function saveConfig(configPath, config, logger) {
         return true;
     }
     catch (e) {
+        const err = e;
         if (logger)
-            logger.error('io', 'Falha ao salvar configuracao', { error: e.message });
+            logger.error('io', 'Falha ao salvar configuracao', { error: err.message });
         return false;
     }
 }
@@ -41,7 +42,16 @@ function computeGridDims(n) {
     return { cols, rows };
 }
 function normalizeState(saved) {
-    const st = { ...saved };
+    const st = {
+        gameUrlDefault: exports.DEFAULT_URL,
+        nextId: 1,
+        cols: 1,
+        rows: 1,
+        colFr: [1],
+        rowFr: [1],
+        panes: [],
+        ...saved,
+    };
     if (!Array.isArray(st.panes))
         st.panes = [];
     st.panes = st.panes.filter((p) => p && typeof p.id === 'number');
@@ -65,7 +75,7 @@ function normalizeState(saved) {
         if (!p.partition)
             p.partition = 'persist:conta' + p.id;
         if (!p.url)
-            p.url = st.gameUrlDefault;
+            p.url = st.gameUrlDefault || exports.DEFAULT_URL;
     });
     return st;
 }
@@ -76,6 +86,6 @@ if (typeof module !== 'undefined' && module.exports) {
         loadConfig,
         saveConfig,
         computeGridDims,
-        normalizeState
+        normalizeState,
     };
 }
