@@ -1,10 +1,12 @@
-# Task-013: Adicionar presets de layout para redimensionamento rapido
+---
+id: task-013
+title: Adicionar presets de layout para redimensionamento rapido
+status: todo
+priority: high
+created_at: 2026-08-15
+---
 
-- **id:** task-013
-- **título:** Adicionar presets de layout para redimensionamento rapido
-- **status:** todo
-- **prioridade:** medium
-- **criado em:** 2026-08-15
+# Adicionar presets de layout para redimensionamento rapido
 
 ## Descrição
 
@@ -19,7 +21,7 @@ Hoje o redimensionamento só é feito arrastando as divisórias (gutters). O usu
 - Permitir reset rapido do layout inteiro para proporcoes iguais (botao na toolbar)
 - Opcional: permitir que o usuario salve seu proprio preset personalizado
 
-## Criterios de aceitacao
+## Critérios de aceitação
 
 - [ ] Botao "Resetar layout" na toolbar (volta todas as fracoes para 1)
 - [ ] Presets rapidos acessiveis (menu ou botoes): Igual, Focar N, Colunas, Linhas

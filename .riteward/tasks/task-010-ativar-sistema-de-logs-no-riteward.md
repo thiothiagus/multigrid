@@ -1,10 +1,12 @@
-# Task-010: Ativar sistema de logs no Riteward
+---
+id: task-010
+title: Ativar sistema de logs no Riteward
+status: done
+priority: high
+created_at: 2026-08-15
+---
 
-- **id:** task-010
-- **título:** Ativar sistema de logs no Riteward
-- **status:** done
-- **prioridade:** high
-- **criado em:** 2026-08-15
+# Ativar sistema de logs no Riteward
 
 ## Descrição
 
@@ -52,4 +54,4 @@ logs:
 
 ## Notas
 
-_Idealmente feita antes de outras tasks de feature, pois os logs ajudam a diagnosticar bugs durante o desenvolvimento._
+_Task concluída. Sistema de logs implementado e funcionando._

@@ -1,10 +1,12 @@
-# Task-011: Corrigir abertura de links externos dentro do jogo (pokepedia)
+---
+id: task-011
+title: Corrigir abertura de links externos dentro do jogo (pokepedia)
+status: todo
+priority: high
+created_at: 2026-08-15
+---
 
-- **id:** task-011
-- **título:** Corrigir abertura de links externos dentro do jogo (pokepedia)
-- **status:** todo
-- **prioridade:** high
-- **criado em:** 2026-08-15
+# Corrigir abertura de links externos dentro do jogo (pokepedia)
 
 ## Descrição
 

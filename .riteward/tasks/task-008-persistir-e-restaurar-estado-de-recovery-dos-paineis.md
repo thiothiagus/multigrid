@@ -1,10 +1,12 @@
-# Task-008: Persistir e restaurar estado de recovery dos paineis
+---
+id: task-008
+title: Persistir e restaurar estado de recovery dos paineis
+status: todo
+priority: low
+created_at: 2026-08-15
+---
 
-- **id:** task-008
-- **título:** Persistir e restaurar estado de recovery dos paineis
-- **status:** todo
-- **prioridade:** medium
-- **criado em:** 2026-08-15
+# Persistir e restaurar estado de recovery dos paineis
 
 ## Descrição
 

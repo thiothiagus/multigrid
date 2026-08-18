@@ -1,10 +1,12 @@
-# Task-004: Configurar pipeline de CI/CD
+---
+id: task-004
+title: Configurar pipeline de CI/CD
+status: todo
+priority: medium
+created_at: 2026-08-15
+---
 
-- **id:** task-004
-- **título:** Configurar pipeline de CI/CD
-- **status:** todo
-- **prioridade:** high
-- **criado em:** 2026-08-15
+# Configurar pipeline de CI/CD
 
 ## Descrição
 

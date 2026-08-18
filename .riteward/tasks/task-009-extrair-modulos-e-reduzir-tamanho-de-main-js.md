@@ -1,10 +1,12 @@
-# Task-009: Extrair módulos e reduzir tamanho de arquivos monolíticos
+---
+id: task-009
+title: Extrair módulos e reduzir tamanho de arquivos monolíticos
+status: todo
+priority: high
+created_at: 2026-08-15
+---
 
-- **id:** task-009
-- **título:** Extrair módulos e reduzir tamanho de arquivos monolíticos
-- **status:** todo
-- **prioridade:** medium
-- **criado em:** 2026-08-15
+# Extrair módulos e reduzir tamanho de arquivos monolíticos
 
 ## Descrição
 
