@@ -1,7 +1,7 @@
 ---
 id: task-009
 title: Extrair módulos e reduzir tamanho de arquivos monolíticos
-status: todo
+status: done
 priority: high
 created_at: 2026-08-15
 ---

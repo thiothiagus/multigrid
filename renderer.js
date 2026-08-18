@@ -1,54 +1,8 @@
 'use strict';
 
-const DEFAULT_URL = 'https://poke.idleworld.online/play';
-const GUTTER_PX = 6;
-
 let state = { panes: [] };
 let persistTimer = null;
 let syncScheduled = false;
-
-// ---------------------------------------------------------------------
-// Utilitarios de layout
-// ---------------------------------------------------------------------
-
-function computeGridDims(n) {
-  const cols = Math.max(1, Math.ceil(Math.sqrt(n)));
-  const rows = Math.max(1, Math.ceil(n / cols));
-  return { cols, rows };
-}
-
-function resetFractions() {
-  state.colFr = new Array(state.cols).fill(1);
-  state.rowFr = new Array(state.rows).fill(1);
-}
-
-// Valida/conserta uma configuracao carregada (do disco ou de um backup
-// importado) antes de usa-la: garante que colunas/linhas/fracoes batem com o
-// numero de contas e que todo painel tem os campos minimos. Reaproveitada no
-// boot (loadConfig) e na restauracao de backup (importConfig).
-function normalizeState(saved) {
-  const st = { ...saved };
-  st.panes = st.panes.filter((p) => p && typeof p.id === 'number');
-  const dims = computeGridDims(st.panes.length);
-  if (st.cols !== dims.cols || !Array.isArray(st.colFr) || st.colFr.length !== dims.cols) {
-    st.cols = dims.cols;
-    st.colFr = new Array(dims.cols).fill(1);
-  }
-  if (st.rows !== dims.rows || !Array.isArray(st.rowFr) || st.rowFr.length !== dims.rows) {
-    st.rows = dims.rows;
-    st.rowFr = new Array(dims.rows).fill(1);
-  }
-  if (typeof st.nextId !== 'number') {
-    st.nextId = 1 + st.panes.reduce((max, p) => Math.max(max, p.id), 0);
-  }
-  if (!st.gameUrlDefault) st.gameUrlDefault = DEFAULT_URL;
-  st.panes.forEach((p) => {
-    if (!p.label) p.label = 'Conta ' + p.id;
-    if (!p.partition) p.partition = 'persist:conta' + p.id;
-    if (!p.url) p.url = st.gameUrlDefault;
-  });
-  return st;
-}
 
 function persist() {
   clearTimeout(persistTimer);
@@ -67,20 +21,7 @@ function syncLayoutToMain() {
   syncScheduled = true;
   requestAnimationFrame(() => {
     syncScheduled = false;
-    const rects = [];
-    document.querySelectorAll('#grid-container .pane').forEach((paneEl) => {
-      const id = Number(paneEl.dataset.id);
-      const header = paneEl.querySelector('.pane-header');
-      const paneRect = paneEl.getBoundingClientRect();
-      const headerRect = header.getBoundingClientRect();
-      rects.push({
-        id,
-        x: Math.round(paneRect.left),
-        y: Math.round(headerRect.bottom),
-        width: Math.round(paneRect.width),
-        height: Math.round(paneRect.bottom - headerRect.bottom)
-      });
-    });
+    const rects = calculatePaneLayout(document.getElementById('grid-container'));
     window.api.syncLayout(rects);
   });
 }
@@ -174,15 +115,6 @@ function movePane(fromId, toId) {
 // ---------------------------------------------------------------------
 // Construcao de cada painel (cabecalho + area reservada + overlay de erro)
 // ---------------------------------------------------------------------
-
-function hideOverlay(overlay) {
-  overlay.classList.add('hidden');
-}
-
-function showOverlay(overlay, msg) {
-  overlay.querySelector('.overlay-msg').textContent = msg;
-  overlay.classList.remove('hidden');
-}
 
 function createPaneElement(pane) {
   const el = document.createElement('div');
@@ -307,40 +239,6 @@ function createPaneElement(pane) {
   el.appendChild(body);
   el.appendChild(overlay);
   return el;
-}
-
-// Reflete no rostinho (bolinha + overlay) o status que o processo principal
-// reporta pra cada conta (carregando, ok, erro, travou, tentando de novo).
-function updatePaneStatus(id, status, extra) {
-  const paneEl = document.querySelector('.pane[data-id="' + id + '"]');
-  if (!paneEl) return;
-  const dot = paneEl.querySelector('.status-dot');
-  const overlay = paneEl.querySelector('.pane-overlay');
-
-  switch (status) {
-    case 'loading':
-      dot.className = 'status-dot loading';
-      break;
-    case 'ok':
-      dot.className = 'status-dot ok';
-      hideOverlay(overlay);
-      break;
-    case 'error':
-      dot.className = 'status-dot error';
-      break;
-    case 'retrying':
-      dot.className = 'status-dot error';
-      showOverlay(overlay, 'Conexão perdida. Tentando reconectar em ' + (extra && extra.seconds) + 's...');
-      break;
-    case 'crashed':
-      dot.className = 'status-dot error';
-      showOverlay(overlay, 'O painel travou (' + ((extra && extra.reason) || 'motivo desconhecido') + '). Reiniciando...');
-      break;
-    case 'error-final':
-      dot.className = 'status-dot error';
-      showOverlay(overlay, 'Não foi possível reconectar automaticamente. Verifique sua internet e clique em Tentar novamente.');
-      break;
-  }
 }
 
 // ---------------------------------------------------------------------
