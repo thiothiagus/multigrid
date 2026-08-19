@@ -24,11 +24,11 @@ Antes de qualquer alteração, entenda o contexto:
 Se houver uma tarefa atribuída, siga o workflow:
 
 1. Inicie o workflow: `riteward workflow start <task-id>`
-2. Avance pelos estados conforme completar cada etapa: `riteward workflow advance <task-id> --to <estado> --reason "motivo"`
+2. Avance pelos estados conforme completar cada etapa: `riteward workflow advance <task-id> --to <estado> --reason "motivo"` (adicione `--yes` ou `-y` para execução não interativa)
 3. Consulte o estado e o histórico a qualquer momento: `riteward workflow show <task-id>`
 4. Quando o workflow estiver em READY_FOR_COMMIT, solicite aprovação antes de prosseguir.
-5. Após aprovação, crie o commit: `riteward workflow commit <task-id>`
-6. Se o push estiver habilitado na configuração (`permissions.push`), envie as alterações ao remoto: `riteward workflow push <task-id>`
+5. Após aprovação, crie o commit: `riteward workflow commit <task-id> --yes`
+6. Se o push estiver habilitado na configuração (`permissions.push`), envie as alterações ao remoto: `riteward workflow push <task-id> --yes`
 
 Estados do workflow (na ordem típica): DISCOVERY, PLANNING, IMPLEMENTATION, TESTING, REVIEW, READY_FOR_COMMIT, COMPLETED.
 
@@ -70,9 +70,20 @@ A configuração de logs é opcional. Se nenhum arquivo de log estiver configura
 
 ## Regras
 
-- Antes de avançar para o estado `IMPLEMENTATION`, crie e faça checkout para uma branch isolada (ex: `feat/<task-id>`).
+- Antes de avançar para o estado `IMPLEMENTATION`, crie e faça checkout para uma branch isolada com nome descritivo, baseado na funcionalidade ou correção — não use o ID da tarefa (ex: `feat/sistema-de-logs`, `fix/erro-validacao-config`).
 - Não escreva código nem faça commits diretamente na branch `main` ou `master`.
 - Não pule estados do workflow.
 - Não faça commit sem aprovação quando o workflow exigir.
 - Documente decisões relevantes usando o modelo de decision record.
 - Se encontrar um bloqueio, avance o workflow para BLOCKED e registre o motivo.
+
+### Verificação de quality gates
+
+Sempre que modificar arquivos que afetam a suíte de qualidade, verifique e atualize os `quality_gates` em `.riteward/config.yaml`:
+
+- **`package.json`** (scripts: test, lint, typecheck) → atualizar gates correspondentes.
+- **Instalação de devDependencies** (vitest, eslint, tsc, etc.) → verificar se há novo script e adicionar gate.
+- **Criação de arquivos de teste** → confirmar que o gate `test` existe e funciona.
+- **Criação de config de lint/typecheck** (`.eslintrc`, `tsconfig.json`) → confirmar que os gates `lint`/`typecheck` existem.
+
+Após cada atualização, valide com `riteward check`.

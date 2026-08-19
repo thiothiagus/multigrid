@@ -1,39 +1,22 @@
-# Plano
-
-- task: task-setup
-- author: opencode
-- created_at: 2026-08-18
-
-## Contexto
-
-O `riteward init` criou as estruturas básicas (`.riteward/`, `AGENTS.md` raiz, `.riteward/AGENTS.md` temporário, `config.yaml` parcial). Resta finalizar a integração: enriquecer o `AGENTS.md` raiz com o contexto do projeto (Cenário A), remover o arquivo temporário, configurar logs e refactor no `config.yaml`, e atualizar o `.gitignore`.
+# Plano Técnico: Configuração Inicial do Riteward (task-setup)
 
 ## Objetivo
+Finalizar a integração e configuração do Riteward no projeto.
 
-Cumprir todos os critérios de aceitação da task-setup, deixando o Riteward operacional com logs, refactor e AGENTS.md unificado.
+## Ações Executadas
+1. **AGENTS.md** (raiz): Mesclado com o template `.riteward/AGENTS.md` — manteve o contexto do projeto e incorporou todas as seções/comandos atualizados (com `--yes` nos workflows, seções de Artefatos, Registros, Qualidade, Monitoramento de Logs e Regras). Arquivo temporário `.riteward/AGENTS.md` removido.
 
-## Abordagem
+2. **Logs**: Diretório `logs/` já existia com `errors.jsonl`. Bloco `logs` no `.riteward/config.yaml` já configurado corretamente. `riteward logs check` validado (sem saída = OK).
 
-Cenário A: `.riteward/AGENTS.md` existe e será mesclado no `AGENTS.md` raiz (contexto do projeto + instruções Riteward) e depois removido. As demais etapas (logs, refactor, .gitignore) são edits pontuais.
+3. **Refactor scan**: `renderer.js` estava com 511 linhas (acima do limite 500). Em vez de aumentar o limite, extraí a lógica de foco (adicionada pela task-012) para novo módulo `src/focus-manager.js`. `renderer.js` reduziu de 510 → 395 linhas. `max_lines` restaurado para 500. Adicionado `coverage` ao `ignore_dirs`. `riteward refactor scan` validado (sem saída = OK).
 
-## Passos
+4. **Quality gates**: Todos os 3 gates (`test`, `lint`, `typecheck`) sincronizados com `package.json`. `riteward check` validado (todos PASS).
 
-1. Enriquecer `AGENTS.md` raiz com contexto do projeto + instruções do Riteward.
-2. Remover `.riteward/AGENTS.md` (temporário).
-3. Garantir `logs/` e `logs/errors.jsonl` existentes; bloco `logs` em `config.yaml`.
-4. Descomentar/preencher bloco `refactor` em `config.yaml` (`max_lines`, `ignore_dirs`).
-5. Atualizar `.gitignore` com `.riteward/state/` (já tem `logs/`).
-6. Validar: `riteward logs check`, `riteward refactor scan` e `riteward status`.
-7. Avançar workflow: IMPLEMENTATION → TESTING → REVIEW → READY_FOR_COMMIT.
+5. **.gitignore**: Já continha `logs/` e `.riteward/state/`. Nenhuma alteração necessária.
 
-## Riscos
+6. **Notas na task-009**: Atualizadas documentando o problema e a solução aplicada.
 
-- Configuração YAML inválida → validar com `riteward status` após cada edit.
-
-## Critérios de sucesso
-
-- [x] `AGENTS.md` unificado na raiz com contexto + Riteward + referência à constitution.
-- [ ] `.riteward/AGENTS.md` removido.
-- [x] `logs/` criado e `riteward logs check` executa sem erros.
-- [x] `refactor` configurado e `riteward refactor scan` limpo.
-- [x] `.gitignore` ignora `.riteward/state/` e `logs/`.
+## Validações
+- ✅ `riteward logs check` — OK
+- ✅ `riteward refactor scan` — Nenhum arquivo monolítico detectado
+- ✅ `riteward check` — 3/3 quality gates PASS

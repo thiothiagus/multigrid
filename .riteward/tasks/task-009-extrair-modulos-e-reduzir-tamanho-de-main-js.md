@@ -25,3 +25,7 @@ main.js e renderer.js são arquivos monolíticos de 500+ linhas. Extrair lógica
 ## Notas
 
 _Tarefa fundamental para habilitar task-001 (TS) e task-003 (testes) de forma efetiva. Recomenda-se fazer como primeiro refactor._
+
+_task-009 foi executada depois de task-001 e task-003, contrariando a recomendação acima. Como consequência, a refatoração não foi tão efetiva quanto poderia ser._
+
+_Após a task-009, a task-012 (modo foco) adicionou ~70 linhas ao renderer.js (397 → 510 linhas), ultrapassando novamente o limite de 500. Na task-setup, foi criado src/focus-manager.js e a lógica de foco extraída do renderer.js (reduzindo de 510 para 395 linhas), trazendo o arquivo novamente abaixo do limite de 500 linhas._

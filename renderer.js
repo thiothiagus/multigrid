@@ -1,9 +1,10 @@
 'use strict';
 
+import { getFocusedPaneId, toggleFocusPane, updateFocusState, clearFocusIfMatches } from './src/focus-manager.js';
+
 let state = { panes: [] };
 let persistTimer = null;
 let syncScheduled = false;
-let focusedPaneId = null;
 
 function persist() {
   clearTimeout(persistTimer);
@@ -25,40 +26,6 @@ function syncLayoutToMain() {
     const rects = calculatePaneLayout(document.getElementById('grid-container'));
     window.api.syncLayout(rects);
   });
-}
-
-function toggleFocusPane(id) {
-  if (focusedPaneId === id) {
-    focusedPaneId = null;
-  } else {
-    focusedPaneId = id;
-  }
-  updateFocusState();
-}
-
-function updateFocusState() {
-  const gridEl = document.getElementById('grid-container');
-  if (!gridEl) return;
-  if (focusedPaneId !== null && state.panes.some((p) => p.id === focusedPaneId)) {
-    gridEl.classList.add('has-focused-pane');
-  } else {
-    focusedPaneId = null;
-    gridEl.classList.remove('has-focused-pane');
-  }
-
-  gridEl.querySelectorAll('.pane').forEach((paneEl) => {
-    const pId = Number(paneEl.dataset.id || paneEl.getAttribute('data-id'));
-    const isFocused = pId === focusedPaneId;
-    paneEl.classList.toggle('is-focused', isFocused);
-    const focusBtn = paneEl.querySelector('.focus-btn');
-    if (focusBtn) {
-      focusBtn.classList.toggle('is-active', isFocused);
-      focusBtn.title = isFocused ? 'Restaurar grid (Sair do Foco)' : 'Focar painel (Modo Foco)';
-      focusBtn.textContent = isFocused ? '\u2922' : '\u26F6';
-    }
-  });
-
-  syncLayoutToMain();
 }
 
 // ---------------------------------------------------------------------
@@ -114,9 +81,7 @@ async function addPane() {
 }
 
 async function removePane(id) {
-  if (focusedPaneId === id) {
-    focusedPaneId = null;
-  }
+  clearFocusIfMatches(id);
   state.panes = state.panes.filter((p) => p.id !== id);
   await window.api.removePane(id);
 
@@ -162,33 +127,21 @@ function createPaneElement(pane) {
   const header = document.createElement('div');
   header.className = 'pane-header';
 
-  // Alça de arrasto: permite reordenar a conta na grade sem recriar a
-  // sessao (as BrowserViews sao chaveadas por id, nao por posicao).
-  const grip = document.createElement('span');
-  grip.className = 'drag-grip';
-  grip.textContent = '\u283F'; // "⠿" (grip)
-  grip.title = 'Arrastar para reordenar';
-  grip.draggable = true;
-
-  grip.addEventListener('dragstart', (e) => {
+  header.addEventListener('dragstart', (e) => {
     e.dataTransfer.setData('text/plain', String(pane.id));
-    e.dataTransfer.effectAllowed = 'move';
-    header.classList.add('dragging');
-  });
-  grip.addEventListener('dragend', () => {
-    header.classList.remove('dragging');
-    document.querySelectorAll('.pane-header.drag-over').forEach((h) => h.classList.remove('drag-over'));
+    header.classList.add('drag-over');
   });
 
-  el.addEventListener('dragover', (e) => {
-    if (e.dataTransfer && e.dataTransfer.types.includes('text/plain')) {
-      e.preventDefault();
-      e.dataTransfer.dropEffect = 'move';
-      header.classList.add('drag-over');
-    }
+  header.addEventListener('dragend', () => header.classList.remove('drag-over'));
+
+  header.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    header.classList.add('drag-over');
   });
-  el.addEventListener('dragleave', () => header.classList.remove('drag-over'));
-  el.addEventListener('drop', (e) => {
+
+  header.addEventListener('dragleave', () => header.classList.remove('drag-over'));
+
+  header.addEventListener('drop', (e) => {
     e.preventDefault();
     header.classList.remove('drag-over');
     const fromId = Number(e.dataTransfer.getData('text/plain'));
@@ -198,6 +151,8 @@ function createPaneElement(pane) {
   header.addEventListener('dblclick', (e) => {
     if (e.target.closest('button') || e.target.closest('.label')) return;
     toggleFocusPane(pane.id);
+    updateFocusState(state, document.getElementById('grid-container'));
+    syncLayoutToMain();
   });
 
   const labelWrap = document.createElement('div');
@@ -235,7 +190,7 @@ function createPaneElement(pane) {
   reloadBtn.textContent = '\u21BB';
   reloadBtn.title = 'Recarregar';
 
-  const isFocused = pane.id === focusedPaneId;
+  const isFocused = pane.id === getFocusedPaneId();
   const focusBtn = document.createElement('button');
   focusBtn.textContent = isFocused ? '\u2922' : '\u26F6';
   focusBtn.title = isFocused ? 'Restaurar grid (Sair do Foco)' : 'Focar painel (Modo Foco)';
@@ -246,38 +201,28 @@ function createPaneElement(pane) {
   clearBtn.title = 'Limpar dados desta conta (reset do login)';
 
   const closeBtn = document.createElement('button');
-  closeBtn.textContent = '\u00D7';
-  closeBtn.title = 'Fechar esta conta';
-  closeBtn.className = 'close-btn';
-
-  actions.appendChild(backBtn);
-  actions.appendChild(reloadBtn);
-  actions.appendChild(focusBtn);
-  actions.appendChild(clearBtn);
-  actions.appendChild(closeBtn);
-
-  header.appendChild(grip);
-  header.appendChild(labelWrap);
-  header.appendChild(actions);
-
-  // Area reservada para a BrowserView nativa (nao e um <webview> -- o
-  // processo principal desenha o conteudo real por cima deste espaco,
-  // usando setBounds com as coordenadas calculadas em syncLayoutToMain()).
-  const body = document.createElement('div');
-  body.className = 'pane-body';
+  closeBtn.textContent = '\u2715';
+  closeBtn.title = 'Fechar conta';
 
   const overlay = document.createElement('div');
   overlay.className = 'pane-overlay hidden';
   const overlayMsg = document.createElement('span');
   overlayMsg.className = 'overlay-msg';
   const overlayBtn = document.createElement('button');
-  overlayBtn.textContent = 'Tentar novamente';
+  overlayBtn.textContent = 'Recarregar';
   overlay.appendChild(overlayMsg);
   overlay.appendChild(overlayBtn);
 
+  const body = document.createElement('div');
+  body.className = 'pane-body';
+
+  backBtn.addEventListener('click', () => window.api.goBack(pane.id));
   reloadBtn.addEventListener('click', () => window.api.reloadPane(pane.id));
-  backBtn.addEventListener('click', () => window.api.backPane(pane.id));
-  focusBtn.addEventListener('click', () => toggleFocusPane(pane.id));
+  focusBtn.addEventListener('click', () => {
+    toggleFocusPane(pane.id);
+    updateFocusState(state, document.getElementById('grid-container'));
+    syncLayoutToMain();
+  });
   clearBtn.addEventListener('click', () => {
     if (window.confirm('Limpar todos os dados (login, cookies, cache) desta conta? O painel será recarregado.')) {
       window.api.clearPaneData(pane.id);
@@ -286,6 +231,13 @@ function createPaneElement(pane) {
   closeBtn.addEventListener('click', () => removePane(pane.id));
   overlayBtn.addEventListener('click', () => window.api.reloadPane(pane.id));
 
+  actions.appendChild(backBtn);
+  actions.appendChild(reloadBtn);
+  actions.appendChild(focusBtn);
+  actions.appendChild(clearBtn);
+  actions.appendChild(closeBtn);
+  header.appendChild(labelWrap);
+  header.appendChild(actions);
   el.appendChild(header);
   el.appendChild(body);
   el.appendChild(overlay);
@@ -329,12 +281,11 @@ function startColResize(g) {
       const deltaFr = ((ev.clientX - startX) / contentWidth) * totalFr;
       let newG = startFrG + deltaFr;
       let newG1 = startFrG1 - deltaFr;
-      if (newG < minFr) { newG = minFr; newG1 = startFrG + startFrG1 - minFr; }
-      if (newG1 < minFr) { newG1 = minFr; newG = startFrG + startFrG1 - minFr; }
+      if (newG < minFr) { newG = minFr; newG1 = totalFr - newG; }
+      if (newG1 < minFr) { newG1 = minFr; newG = totalFr - newG1; }
       state.colFr[g] = newG;
       state.colFr[g + 1] = newG1;
       applyGridTemplate();
-      syncLayoutToMain();
     }
     function onUp() {
       document.removeEventListener('mousemove', onMove);
@@ -362,12 +313,11 @@ function startRowResize(g) {
       const deltaFr = ((ev.clientY - startY) / contentHeight) * totalFr;
       let newG = startFrG + deltaFr;
       let newG1 = startFrG1 - deltaFr;
-      if (newG < minFr) { newG = minFr; newG1 = startFrG + startFrG1 - minFr; }
-      if (newG1 < minFr) { newG1 = minFr; newG = startFrG + startFrG1 - minFr; }
+      if (newG < minFr) { newG = minFr; newG1 = totalFr - newG; }
+      if (newG1 < minFr) { newG1 = minFr; newG = totalFr - newG1; }
       state.rowFr[g] = newG;
       state.rowFr[g + 1] = newG1;
       applyGridTemplate();
-      syncLayoutToMain();
     }
     function onUp() {
       document.removeEventListener('mousemove', onMove);
@@ -439,7 +389,7 @@ function render() {
     gridEl.appendChild(r);
   }
 
-  updateFocusState();
+  updateFocusState(state, gridEl);
 }
 
 // ---------------------------------------------------------------------

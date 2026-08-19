@@ -33,3 +33,4 @@ refactor:
     - "dist"
     - ".git"
     - "package-lock.json"
+    - "coverage"

@@ -14,3 +14,4 @@ Este documento define os princípios, regras e políticas de desenvolvimento do 
 - Não executar git push, merge ou deploy sem aprovação explícita.
 - Manter o histórico de commits limpo e descritivo.
 - Respeitar os workflows definidos em `.riteward/workflows/`.
+- Manter os `quality_gates` em `.riteward/config.yaml` sincronizados com os scripts e ferramentas do projeto. Sempre que houver mudança em scripts, devDependencies ou configs de qualidade, atualize os gates e valide com `riteward check`.
