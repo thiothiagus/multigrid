@@ -1,7 +1,7 @@
 ---
 id: task-003
 title: Adicionar testes automatizados
-status: todo
+status: done
 priority: high
 created_at: 2026-08-15
 ---

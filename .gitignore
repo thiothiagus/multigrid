@@ -25,6 +25,9 @@ logs/
 # Riteward estado local
 .riteward/state/
 
+# Coverage
+coverage/
+
 # Configuração local do usuário (salva em %APPDATA%)
 multiconta-config.json
 window-state.json
