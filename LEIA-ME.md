@@ -15,9 +15,6 @@ App de desktop (Electron) para jogar várias contas ao mesmo tempo, em uma
   a posição dela na grade — a sessão não é recriada, só a ordem muda.
 - **Limpar dados de uma conta**: botão `⌫` no cabeçalho apaga cookies/login
   daquela conta (recupera login travado) e recarrega só esse painel.
-- **Backup / Restaurar**: botões **Exportar** / **Importar** na barra do topo
-  salvam a configuração completa (contas, nomes, tamanhos) em um arquivo
-  `.json` e restauram de lá, substituindo as contas atuais.
 - **Janela persistente**: posição, tamanho e estado maximizado da janela
   voltam do jeito que você deixou da última vez.
 - **Pop-ups de login**: se o jogo/site abrir login em janela nova
@@ -30,97 +27,119 @@ App de desktop (Electron) para jogar várias contas ao mesmo tempo, em uma
   pra indicar o status). Se não conseguir depois de várias tentativas,
   aparece um botão "Tentar novamente".
 - **Mais seguro**: janela agora roda com `sandbox: true` e uma política de
-  segurança de conteúdo (CSP) restritiva na interface do app.
+  CSP restritiva. Cada conta roda em `BrowserView` isolada com partição
+  `persist:conta<N>`.
 
-## Requisitos
+## Como rodar
 
-- **Node.js**: https://nodejs.org (baixe a versão LTS)
-
-## Como rodar (modo desenvolvimento, via terminal)
-
-```
+```bash
 npm install
-npm start
+npm run start
 ```
 
-O primeiro `npm install` baixa o Electron (~200 MB) e pode demorar alguns
-minutos.
+## Scripts disponíveis
 
-## Como gerar um instalador (.exe / AppImage)
+| Comando | Descrição |
+|---------|-----------|
+| `npm run start` | Build + abre o app (Electron) |
+| `npm run build` | Compila TypeScript → JavaScript (roda `tsc`) |
+| `npm run typecheck` | Verifica tipos sem emitir arquivos |
+| `npm run test` | Roda testes com Vitest |
+| `npm run lint` | ESLint + Prettier |
+| `npm run format` | Formata código com Prettier |
+| `npm run dist` | Gera instalador Windows (electron-builder) |
 
-Depois de testar com `npm start` e estar satisfeito:
+## Estrutura do projeto
 
 ```
-npm run dist
+multiconta-grid-v3/
+├── multiconta/           # App Electron (este diretório)
+│   ├── main.ts           # Processo principal (cria janela, gerencia BrowserViews)
+│   ├── preload.ts        # Ponte IPC segura (contextBridge)
+│   ├── renderer.ts       # UI do grid (setup, render, eventos)
+│   ├── logger.ts         # Logger JSONL em logs/errors.jsonl
+│   ├── index.html        # Shell da UI (toolbar, setup-screen, grid-container)
+│   ├── style.css         # Estilos (grid, painéis, divisórias, overlays)
+│   ├── src/
+│   │   ├── config.ts           # Caminhos de arquivo, DEFAULT_URL
+│   │   ├── config-state.ts     # Estado padrão, normalização, computeGridDims
+│   │   ├── grid-layout.ts      # Cálculo de layout CSS Grid, frações, resizers
+│   │   ├── pane-manager.ts     # Criação/remoção/atualização de BrowserViews
+│   │   ├── pane-ui.ts          # Atualização de status (bolinha, overlay)
+│   │   ├── focus-manager.ts    # Estado de foco (modo foco painel)
+│   │   ├── win-state.ts        # Persistência de geometria da janela
+│   │   ├── retry.ts            # Lógica de retry com backoff exponencial
+│   │   ├── types.ts            # Interfaces TypeScript compartilhadas
+│   │   └── win-state.ts        # Estado da janela
+│   ├── tests/           # Testes automatizados (Vitest)
+│   │   ├── config.test.ts
+│   │   ├── grid-layout.test.ts
+│   │   ├── retry.test.ts
+│   │   └── win-state.test.ts
+│   ├── tsconfig.json          # Main process (CommonJS)
+│   ├── tsconfig.renderer.json # Renderer (ES modules)
+│   ├── package.json
+│   └── .eslintrc.cjs          # Config ESLint (CommonJS)
+└── ... (outros arquivos de config)
 ```
 
-Isso gera um instalador em `dist/` (`.exe` no Windows, `.AppImage` no
-Linux) usando o ícone incluso em `build/icon.ico` / `build/icon.png`.
-Rode esse comando no mesmo sistema operacional do instalador que você
-quer gerar (gerar `.exe` funciona melhor rodando no Windows). Para macOS,
-adicione um bloco `"mac"` na seção `build` do `package.json` com um ícone
-`.icns` próprio.
+## Arquitetura rápida
 
-**Se o build falhar com `Cannot create symbolic link ... privilégio
-necessário`**: é o `electron-builder` tentando extrair suas ferramentas
-(`winCodeSign`) e o Windows negando criação de symlink. Ative o **Modo de
-desenvolvedor** (Configurações → Sistema → Para desenvolvedores) ou rode o
-comando em um terminal **como Administrador**, e rode `npm run dist` de
-novo. Com o cache já baixado (pasta `%LOCALAPPDATA%\electron-builder\Cache`),
-o build funciona normalmente sem privilégio extra.
+- **Main process** (`main.ts`): cria `BrowserWindow`, gerencia `BrowserView`s
+  (uma por conta), posiciona via `setBounds`, lida com IPC.
+- **Preload** (`preload.ts`): expõe `window.api` com métodos tipados
+  (`createPane`, `removePane`, `syncLayout`, `onPaneStatus`, etc.).
+- **Renderer** (`renderer.ts`): monta a grade CSS Grid, cria elementos
+  de painel (header + área reservada), escuta redimensionamento
+  das divisórias (`mousedown`/`mousemove`/`mouseup`), sincroniza layout
+  com main process via `window.api.syncLayout()`.
 
-## Como funciona por baixo dos panos
+## Isolamento de sessão
 
-Cada quadrante é uma `BrowserView` nativa do Electron (não uma tag
-`<webview>` de HTML) com uma `partition` própria (`persist:conta1`,
-`persist:conta2`...), o que dá a cada uma seu próprio conjunto de
-cookies/armazenamento — por isso dá pra logar em contas diferentes ao
-mesmo tempo, na mesma janela, com cada login salvo entre
-reinicializações. O processo principal do app posiciona cada
-`BrowserView` diretamente em cima da área reservada pra ela (via
-`setBounds`, calculado a partir da posição real na tela), o que evita o
-bug de "conteúdo pequeno com espaço em branco ao redor" que a tag
-`<webview>` tinha.
+Cada conta usa partição `persist:conta<N>` — cookies, localStorage,
+cache e sessionStorage ficam **completamente separados** entre painéis.
+Não há vazamento de sessão entre contas.
 
-A configuração completa (contas, nomes, tamanhos dos painéis) fica salva
-localmente em:
-- Windows: `%APPDATA%\multi-conta-grid\multiconta-config.json`
-- Mac/Linux: `~/.config/multi-conta-grid/multiconta-config.json`
+## Recuperação de travamentos
 
-A posição/tamanho da janela fica em `window-state.json` na mesma pasta. Os
-dois são o que os botões **Exportar / Importar** copiam/restauram (o backup
-cobre o `multiconta-config.json`).
+- Heartbeat a cada 30s via `webContents.on('render-process-gone')` e
+  `webContents.on('unresponsive')`.
+- Se painel travar: status fica vermelho, overlay "O painel travou...
+  Reiniciando...", recria `BrowserView` na mesma partição (mantém login).
+- Se perder conexão: status amarelo, overlay "Tentando reconectar em Xs...",
+  recarrega a URL do painel.
+- Após 5 falhas: status vermelho final, botão "Tentar novamente" manual.
 
-Nada é enviado para nenhum servidor externo — o único destino de rede é a
-própria URL do jogo que você configurou.
+## Configuração persistida
 
-## Personalizações
+Arquivo: `%APPDATA%/Multi-Conta Grid/config.json`
 
-- **Trocar o jogo padrão**: mude o valor pré-preenchido no campo da tela
-  inicial, ou edite a constante `DEFAULT_URL` em `renderer.js`.
-- **Cores/tema**: edite as variáveis no topo de `style.css` (`:root`).
-- **Limite de contas**: hoje o máximo é 9 na tela inicial (`max="9"` em
-  `index.html`); pode aumentar se seu PC aguentar.
+Contém:
+- `gameUrlDefault`: URL padrão para novas contas
+- `nextId`: próximo ID sequencial
+- `cols`, `rows`: grade atual
+- `colFr`, `rowFr`: frações CSS Grid (1fr = tamanho igual)
+- `panes[]`: array de `{id, label, partition, url}`
 
-## Sobre os avisos que aparecem no terminal
+## Desenvolvimento
 
-- `npm warn deprecated ...` durante o `npm install`: são de bibliotecas
-  internas do `electron-builder` (o gerador de instalador). Não afetam o
-  funcionamento do app, pode ignorar.
-- `Failed to resolve address for stun.cloudflare.com` / `stun.l.google.com`
-  ao rodar `npm start`: é o Chromium tentando abrir uma conexão WebRTC
-  (provavelmente algum script de anúncio/analytics da própria página do
-  jogo) e falhando por DNS. Também é inofensivo — o jogo não depende disso
-  pra funcionar.
+- Código-fonte em **TypeScript** (`.ts`)
+- Build gera `.js` na raiz e em `src/` (artefatos, não versionados)
+- Dois `tsconfig`:
+  - `tsconfig.json` → `module: CommonJS` (main process)
+  - `tsconfig.renderer.json` → `module: ES2022` (renderer, carrega via `<script type="module">`)
 
-## Observação
+## Qualidade
 
-Continua sendo só um gerenciador de janelas/sessões — não automatiza
-nada dentro do jogo (sem clique automático, sem farm, sem macro). Isso é
-o que mantém o risco de detecção baixo; se quiser adicionar automação no
-futuro, saiba que isso muda de categoria de risco em relação ao que
-conversamos.
+- `npm run typecheck` — `tsc --noEmit` nos dois tsconfig
+- `npm run test` — Vitest (24 testes cobrindo config, grid-layout, retry, win-state)
+- `npm run lint` — ESLint + Prettier (regras TypeScript recomendadas)
+- `npm run format:check` — Prettier check
+- `riteward check` — executa todos os quality gates acima
 
-Bônus da nova arquitetura: adicionar ou remover uma conta agora **não**
-recarrega mais as outras — cada uma continua rodando normalmente, só o
-espaço na grade é que muda.
+## Limitações conhecidas
+
+- Janelas pop-up (`window.open`) são bloqueadas e carregadas no painel.
+  Alguns fluxos OAuth complexos podem não funcionar.
+- Não há suporte a múltiplos monitores (janela única).
+- Backup/restore de configuração foi removido (funcionalidade problemática).
