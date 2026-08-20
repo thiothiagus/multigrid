@@ -410,52 +410,5 @@ document.getElementById('setup-start-btn').addEventListener('click', async () =>
 
 // --- Backup / restauracao da configuracao (dialogos nativos no processo) ---
 
-document.getElementById('export-config-btn').addEventListener('click', async () => {
-  const res = await window.api.exportConfig();
-  if (res && res.ok) {
-    window.alert('Configuração exportada para:\n' + res.path);
-  }
-});
 
-document.getElementById('import-config-btn').addEventListener('click', async () => {
-  const config = await window.api.importConfig();
-  if (!config) {
-    window.alert('Nenhum arquivo de backup válido selecionado.');
-    return;
-  }
-  const msg = 'Importar vai substituir a configuração atual (' + state.panes.length +
-    ' contas) pelas ' + config.panes.length + ' contas do backup. Continuar?';
-  if (!window.confirm(msg)) return;
-  await applyImportedConfig(config);
-});
 
-async function applyImportedConfig(config) {
-  for (const pane of state.panes) {
-    await window.api.removePane(pane.id);
-  }
-  state = normalizeState(config);
-  render();
-  for (const pane of state.panes) {
-    await window.api.createPane(pane);
-  }
-  syncLayoutToMain();
-  persist();
-}
-
-window.addEventListener('resize', syncLayoutToMain);
-
-window.addEventListener('DOMContentLoaded', async () => {
-  window.api.onPaneStatus(({ id, status, extra }) => updatePaneStatus(id, status, extra));
-
-  const saved = await window.api.loadConfig();
-  if (saved && Array.isArray(saved.panes) && saved.panes.length > 0) {
-    state = normalizeState(saved);
-    render();
-    for (const pane of state.panes) {
-      await window.api.createPane(pane);
-    }
-    syncLayoutToMain();
-  } else {
-    showSetup();
-  }
-});
