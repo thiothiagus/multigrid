@@ -1,20 +1,16 @@
 {
   "compilerOptions": {
     "target": "ES2022",
-    "module": "CommonJS",
+    "module": "ES2022",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true
   },
   "include": [
-    "main.ts",
-    "logger.ts",
-    "preload.ts",
-    "src/config.ts",
-    "src/win-state.ts",
-    "src/retry.ts",
-    "src/pane-manager.ts",
-    "./types.ts"
+    "renderer.ts",
+    "src/grid-layout.ts",
+    "src/focus-manager.ts",
+    "src/config-state.ts"
   ]
 }

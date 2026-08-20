@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { WinState, Logger } from './types';
+import { BrowserWindow } from 'electron';
 
 let winState: WinState = { width: 1500, height: 950, isMaximized: false };
 let winStateTimer: NodeJS.Timeout | null = null;
@@ -51,41 +52,32 @@ export function ensureVisibleBounds(
   };
 }
 
-export function saveWinState(
-  win: import('electron').BrowserWindow | null,
-  winStatePath: string,
-  logger?: Logger
-): void {
-  if (!win || win.isDestroyed()) return;
-  winState = { ...win.getBounds(), isMaximized: win.isMaximized() };
+export function saveWinState(win: BrowserWindow, winStatePath: string, logger?: Logger): void {
+  if (!win) return;
+  const state = win.getBounds();
+  const newWinState: WinState = {
+    width: state.width,
+    height: state.height,
+    x: state.x,
+    y: state.y,
+    isMaximized: win.isMaximized(),
+  };
+  winState = newWinState;
   try {
-    fs.writeFileSync(winStatePath, JSON.stringify(winState, null, 2), 'utf-8');
-  } catch (e: unknown) {
-    const err = e as Error;
-    if (logger) logger.warn('io', 'Falha ao salvar window state', { error: err.message });
+    fs.writeFileSync(winStatePath, JSON.stringify(winState));
+  } catch (e) {
+    if (logger)
+      logger.error('io', 'Falha ao salvar window state', {
+        error: e instanceof Error ? e.message : String(e),
+      });
   }
 }
 
 export function scheduleSaveWinState(
-  win: import('electron').BrowserWindow | null,
+  win: BrowserWindow,
   winStatePath: string,
   logger?: Logger
 ): void {
   if (winStateTimer) clearTimeout(winStateTimer);
-  winStateTimer = setTimeout(() => saveWinState(win, winStatePath, logger), 500);
-}
-
-export function getWinState(): WinState {
-  return winState;
-}
-
-if (typeof module !== 'undefined' && module.exports) {
-  module.exports = {
-    getWinStatePath,
-    loadWinState,
-    ensureVisibleBounds,
-    saveWinState,
-    scheduleSaveWinState,
-    getWinState,
-  };
+  winStateTimer = setTimeout(() => saveWinState(win, winStatePath, logger), 1500);
 }

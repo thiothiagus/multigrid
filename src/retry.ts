@@ -5,7 +5,7 @@ export interface ScheduleRetryOpts {
   id: number;
   fromCrash: boolean;
   logger?: Logger;
-  sendStatus: (id: number, status: string, extra?: { seconds?: number }) => void;
+  sendStatus: (id: number, status: string, extra?: Record<string, unknown>) => void;
   showPaneView?: (entry: PaneEntry) => void;
 }
 

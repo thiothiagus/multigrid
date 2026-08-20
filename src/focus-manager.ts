@@ -22,14 +22,14 @@ function toggleFocusPane(id) {
 function updateFocusState(state, gridEl) {
   if (!gridEl) return;
 
-  if (focusedPaneId !== null && state.panes.some((p) => p.id === focusedPaneId)) {
+  if (focusedPaneId !== null && state.panes.some(p => p.id === focusedPaneId)) {
     gridEl.classList.add('has-focused-pane');
   } else {
     focusedPaneId = null;
     gridEl.classList.remove('has-focused-pane');
   }
 
-  gridEl.querySelectorAll('.pane').forEach((paneEl) => {
+  gridEl.querySelectorAll('.pane').forEach(paneEl => {
     const pId = Number(paneEl.dataset.id || paneEl.getAttribute('data-id'));
     const isFocused = pId === focusedPaneId;
     paneEl.classList.toggle('is-focused', isFocused);
@@ -54,8 +54,14 @@ if (typeof module !== 'undefined' && module.exports) {
     setFocusedPaneId,
     toggleFocusPane,
     updateFocusState,
-    clearFocusIfMatches
+    clearFocusIfMatches,
   };
 }
 
-export { getFocusedPaneId, setFocusedPaneId, toggleFocusPane, updateFocusState, clearFocusIfMatches };
+export {
+  getFocusedPaneId,
+  setFocusedPaneId,
+  toggleFocusPane,
+  updateFocusState,
+  clearFocusIfMatches,
+};
