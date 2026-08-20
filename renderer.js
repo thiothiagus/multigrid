@@ -54,10 +54,11 @@ function initFromScratch(n, url) {
     panes: []
   };
   for (let i = 1; i <= n; i++) {
-    state.panes.push({ id: i, label: 'Conta ' + i, partition: 'persist:conta' + i, url });
-  }
-  render();
-  persist();
+      state.panes.push({ id: i, label: 'Conta ' + i, partition: 'persist:conta' + i, url });
+    }
+    render();
+    syncLayoutToMain();
+    persist();
 }
 
 // ---------------------------------------------------------------------
@@ -70,11 +71,11 @@ async function addPane() {
   state.panes.push(pane);
 
   const dims = computeGridDims(state.panes.length);
-  state.cols = dims.cols;
-  state.rows = dims.rows;
-  resetFractions();
+    state.cols = dims.cols;
+    state.rows = dims.rows;
+    resetFractions(state);
 
-  render(); // paineis existentes NAO sao recriados, so o novo espaco abre
+    render(); // paineis existentes NAO sao recriados, so o novo espaco abre
   await window.api.createPane(pane);
   syncLayoutToMain();
   persist();
@@ -92,9 +93,9 @@ async function removePane(id) {
   }
 
   const dims = computeGridDims(state.panes.length);
-  state.cols = dims.cols;
-  state.rows = dims.rows;
-  resetFractions();
+    state.cols = dims.cols;
+    state.rows = dims.rows;
+    resetFractions(state);
 
   render(); // os paineis que sobraram continuam rodando, sem recarregar
   syncLayoutToMain();

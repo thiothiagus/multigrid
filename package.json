@@ -63,6 +63,5 @@
       "target": "AppImage",
       "icon": "build/icon.png"
     }
-  },
-  "type": "module"
+  }
 }

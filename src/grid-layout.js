@@ -7,10 +7,9 @@ function computeGridDims(n) {
 }
 
 function resetFractions(st) {
-  const target = st || (typeof state !== 'undefined' ? state : null);
-  if (!target) return;
-  target.colFr = new Array(target.cols).fill(1);
-  target.rowFr = new Array(target.rows).fill(1);
+  if (!st) return;
+  st.colFr = new Array(st.cols).fill(1);
+  st.rowFr = new Array(st.rows).fill(1);
 }
 
 function buildGridTemplates(state) {
