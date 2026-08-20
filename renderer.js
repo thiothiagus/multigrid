@@ -1,13 +1,6 @@
 'use strict';
 
-import {
-  getFocusedPaneId,
-  toggleFocusPane,
-  updateFocusState,
-  clearFocusIfMatches,
-} from './src/focus-manager.ts';
-import { DEFAULT_URL, computeGridDims } from './src/config-state';
-import { resetFractions, calculatePaneLayout, GUTTER_PX } from './src/grid-layout';
+import { getFocusedPaneId, toggleFocusPane, updateFocusState, clearFocusIfMatches } from './src/focus-manager.js';
 
 let state = { panes: [] };
 let persistTimer = null;
@@ -58,14 +51,14 @@ function initFromScratch(n, url) {
     rows: dims.rows,
     colFr: new Array(dims.cols).fill(1),
     rowFr: new Array(dims.rows).fill(1),
-    panes: [],
+    panes: []
   };
   for (let i = 1; i <= n; i++) {
-    state.panes.push({ id: i, label: 'Conta ' + i, partition: 'persist:conta' + i, url });
-  }
-  render();
-  syncLayoutToMain();
-  persist();
+      state.panes.push({ id: i, label: 'Conta ' + i, partition: 'persist:conta' + i, url });
+    }
+    render();
+    syncLayoutToMain();
+    persist();
 }
 
 // ---------------------------------------------------------------------
@@ -74,20 +67,15 @@ function initFromScratch(n, url) {
 
 async function addPane() {
   const id = state.nextId++;
-  const pane = {
-    id,
-    label: 'Conta ' + id,
-    partition: 'persist:conta' + id,
-    url: state.gameUrlDefault || DEFAULT_URL,
-  };
+  const pane = { id, label: 'Conta ' + id, partition: 'persist:conta' + id, url: state.gameUrlDefault || DEFAULT_URL };
   state.panes.push(pane);
 
   const dims = computeGridDims(state.panes.length);
-  state.cols = dims.cols;
-  state.rows = dims.rows;
-  resetFractions(state);
+    state.cols = dims.cols;
+    state.rows = dims.rows;
+    resetFractions(state);
 
-  render(); // paineis existentes NAO sao recriados, so o novo espaco abre
+    render(); // paineis existentes NAO sao recriados, so o novo espaco abre
   await window.api.createPane(pane);
   syncLayoutToMain();
   persist();
@@ -95,7 +83,7 @@ async function addPane() {
 
 async function removePane(id) {
   clearFocusIfMatches(id);
-  state.panes = state.panes.filter(p => p.id !== id);
+  state.panes = state.panes.filter((p) => p.id !== id);
   await window.api.removePane(id);
 
   if (state.panes.length === 0) {
@@ -105,9 +93,9 @@ async function removePane(id) {
   }
 
   const dims = computeGridDims(state.panes.length);
-  state.cols = dims.cols;
-  state.rows = dims.rows;
-  resetFractions(state);
+    state.cols = dims.cols;
+    state.rows = dims.rows;
+    resetFractions(state);
 
   render(); // os paineis que sobraram continuam rodando, sem recarregar
   syncLayoutToMain();
@@ -118,8 +106,8 @@ async function removePane(id) {
 // ordem no array muda (a posicao de cada BrowserView vem do indice no
 // render()), entao nenhuma sessao e recriada no processo.
 function movePane(fromId, toId) {
-  const fromIdx = state.panes.findIndex(p => p.id === fromId);
-  const toIdx = state.panes.findIndex(p => p.id === toId);
+  const fromIdx = state.panes.findIndex((p) => p.id === fromId);
+  const toIdx = state.panes.findIndex((p) => p.id === toId);
   if (fromIdx < 0 || toIdx < 0 || fromIdx === toIdx) return;
   const [moved] = state.panes.splice(fromIdx, 1);
   state.panes.splice(toIdx, 0, moved);
@@ -140,28 +128,28 @@ function createPaneElement(pane) {
   const header = document.createElement('div');
   header.className = 'pane-header';
 
-  header.addEventListener('dragstart', e => {
+  header.addEventListener('dragstart', (e) => {
     e.dataTransfer.setData('text/plain', String(pane.id));
     header.classList.add('drag-over');
   });
 
   header.addEventListener('dragend', () => header.classList.remove('drag-over'));
 
-  header.addEventListener('dragover', e => {
+  header.addEventListener('dragover', (e) => {
     e.preventDefault();
     header.classList.add('drag-over');
   });
 
   header.addEventListener('dragleave', () => header.classList.remove('drag-over'));
 
-  header.addEventListener('drop', e => {
+  header.addEventListener('drop', (e) => {
     e.preventDefault();
     header.classList.remove('drag-over');
     const fromId = Number(e.dataTransfer.getData('text/plain'));
     if (fromId !== pane.id) movePane(fromId, pane.id);
   });
 
-  header.addEventListener('dblclick', e => {
+  header.addEventListener('dblclick', (e) => {
     if (e.target.closest('button') || e.target.closest('.label')) return;
     toggleFocusPane(pane.id);
     updateFocusState(state, document.getElementById('grid-container'));
@@ -185,11 +173,8 @@ function createPaneElement(pane) {
     label.textContent = pane.label;
     persist();
   });
-  label.addEventListener('keydown', e => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      label.blur();
-    }
+  label.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') { e.preventDefault(); label.blur(); }
   });
 
   labelWrap.appendChild(dot);
@@ -240,11 +225,7 @@ function createPaneElement(pane) {
     syncLayoutToMain();
   });
   clearBtn.addEventListener('click', () => {
-    if (
-      window.confirm(
-        'Limpar todos os dados (login, cookies, cache) desta conta? O painel será recarregado.'
-      )
-    ) {
+    if (window.confirm('Limpar todos os dados (login, cookies, cache) desta conta? O painel será recarregado.')) {
       window.api.clearPaneData(pane.id);
     }
   });
@@ -301,14 +282,8 @@ function startColResize(g) {
       const deltaFr = ((ev.clientX - startX) / contentWidth) * totalFr;
       let newG = startFrG + deltaFr;
       let newG1 = startFrG1 - deltaFr;
-      if (newG < minFr) {
-        newG = minFr;
-        newG1 = totalFr - newG;
-      }
-      if (newG1 < minFr) {
-        newG1 = minFr;
-        newG = totalFr - newG1;
-      }
+      if (newG < minFr) { newG = minFr; newG1 = totalFr - newG; }
+      if (newG1 < minFr) { newG1 = minFr; newG = totalFr - newG1; }
       state.colFr[g] = newG;
       state.colFr[g + 1] = newG1;
       applyGridTemplate();
@@ -339,14 +314,8 @@ function startRowResize(g) {
       const deltaFr = ((ev.clientY - startY) / contentHeight) * totalFr;
       let newG = startFrG + deltaFr;
       let newG1 = startFrG1 - deltaFr;
-      if (newG < minFr) {
-        newG = minFr;
-        newG1 = totalFr - newG;
-      }
-      if (newG1 < minFr) {
-        newG1 = minFr;
-        newG = totalFr - newG1;
-      }
+      if (newG < minFr) { newG = minFr; newG1 = totalFr - newG; }
+      if (newG1 < minFr) { newG1 = minFr; newG = totalFr - newG1; }
       state.rowFr[g] = newG;
       state.rowFr[g + 1] = newG1;
       applyGridTemplate();
@@ -391,8 +360,9 @@ function render() {
 
     const isLastRow = row === rows - 1;
     const itemsInLastRow = state.panes.length - (rows - 1) * cols;
-    paneEl.style.gridColumnEnd =
-      isLastRow && itemsInLastRow < cols ? String(2 * cols) : String(colLine + 1);
+    paneEl.style.gridColumnEnd = (isLastRow && itemsInLastRow < cols)
+      ? String(2 * cols)
+      : String(colLine + 1);
     paneEl.style.gridRowEnd = String(rowLine + 1);
 
     gridEl.appendChild(paneEl);
@@ -429,10 +399,7 @@ function render() {
 
 document.getElementById('add-pane-btn').addEventListener('click', addPane);
 document.getElementById('setup-start-btn').addEventListener('click', async () => {
-  const n = Math.max(
-    1,
-    Math.min(9, parseInt(document.getElementById('setup-count').value, 10) || 4)
-  );
+  const n = Math.max(1, Math.min(9, parseInt(document.getElementById('setup-count').value, 10) || 4));
   const url = document.getElementById('setup-url').value.trim() || DEFAULT_URL;
   initFromScratch(n, url);
   for (const pane of state.panes) {
@@ -442,3 +409,6 @@ document.getElementById('setup-start-btn').addEventListener('click', async () =>
 });
 
 // --- Backup / restauracao da configuracao (dialogos nativos no processo) ---
+
+
+

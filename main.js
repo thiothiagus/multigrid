@@ -89,11 +89,11 @@ function createWindow() {
         if (win)
             (0, win_state_1.saveWinState)(win, winStatePath, logger);
     });
+    if (winState.isMaximized)
+        win.maximize();
     win.loadFile('index.html');
 }
 electron_1.ipcMain.handle('create-pane', (event, { id, partition, url }) => {
-    if (!win)
-        return false;
     return (0, pane_manager_1.createPaneView)({
         win,
         panes,
@@ -106,8 +106,6 @@ electron_1.ipcMain.handle('create-pane', (event, { id, partition, url }) => {
     });
 });
 electron_1.ipcMain.handle('remove-pane', (event, id) => {
-    if (!win)
-        return false;
     return (0, pane_manager_1.removePaneView)({ win, panes, id, logger });
 });
 electron_1.ipcMain.handle('reload-pane', (event, id) => {
@@ -139,7 +137,7 @@ electron_1.ipcMain.handle('save-config', (_event, config) => {
     return (0, config_1.saveConfig)((0, config_1.getConfigPath)(electron_1.app.getPath('userData')), config, logger);
 });
 electron_1.ipcMain.handle('clear-pane-data', (event, id) => {
-    return (0, pane_manager_1.clearPaneDataView)({ panes, id });
+    return (0, pane_manager_1.clearPaneDataView)({ panes, id, logger });
 });
 electron_1.ipcMain.handle('export-config', async () => {
     try {
@@ -182,12 +180,14 @@ electron_1.ipcMain.handle('import-config', async () => {
         return null;
     }
 });
-electron_1.app.whenReady().then(createWindow);
+electron_1.app.whenReady().then(() => {
+    createWindow();
+    electron_1.app.on('activate', () => {
+        if (electron_1.BrowserWindow.getAllWindows().length === 0)
+            createWindow();
+    });
+});
 electron_1.app.on('window-all-closed', () => {
     if (process.platform !== 'darwin')
         electron_1.app.quit();
-});
-electron_1.app.on('activate', () => {
-    if (electron_1.BrowserWindow.getAllWindows().length === 0)
-        createWindow();
 });

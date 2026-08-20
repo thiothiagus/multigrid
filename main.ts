@@ -71,11 +71,12 @@ function createWindow(): void {
     if (win) saveWinState(win, winStatePath, logger);
   });
 
+  if (winState.isMaximized) win.maximize();
+
   win.loadFile('index.html');
 }
 
 ipcMain.handle('create-pane', (event, { id, partition, url }) => {
-  if (!win) return false;
   return createPaneView({
     win,
     panes,
@@ -90,7 +91,6 @@ ipcMain.handle('create-pane', (event, { id, partition, url }) => {
 });
 
 ipcMain.handle('remove-pane', (event, id: number) => {
-  if (!win) return false;
   return removePaneView({ win, panes, id, logger });
 });
 
@@ -128,7 +128,7 @@ ipcMain.handle('save-config', (_event, config: Parameters<typeof saveConfig>[1])
 });
 
 ipcMain.handle('clear-pane-data', (event, id: number) => {
-  return clearPaneDataView({ panes, id });
+  return clearPaneDataView({ panes, id, logger });
 });
 
 ipcMain.handle('export-config', async () => {
@@ -167,12 +167,13 @@ ipcMain.handle('import-config', async () => {
   }
 });
 
-app.whenReady().then(createWindow);
+app.whenReady().then(() => {
+  createWindow();
+  app.on('activate', () => {
+    if (BrowserWindow.getAllWindows().length === 0) createWindow();
+  });
+});
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit();
-});
-
-app.on('activate', () => {
-  if (BrowserWindow.getAllWindows().length === 0) createWindow();
 });

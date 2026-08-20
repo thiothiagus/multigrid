@@ -1,4 +1,4 @@
-import { BrowserView } from 'electron';
+import { WebContentsView } from 'electron';
 
 export interface Pane {
   id: number;
@@ -48,9 +48,29 @@ export interface Logger {
 }
 
 export interface PaneEntry {
-  view: BrowserView;
+  view: WebContentsView;
   visible: boolean;
   bounds?: { x: number; y: number; width: number; height: number };
   retryTimer?: NodeJS.Timeout | null;
   retryCount?: number;
+}
+
+export interface WindowApi {
+  loadConfig: () => Promise<Config | null>;
+  saveConfig: (config: Config) => Promise<boolean>;
+  createPane: (pane: Pane) => Promise<boolean>;
+  removePane: (id: number) => Promise<boolean>;
+  reloadPane: (id: number) => Promise<boolean>;
+  backPane: (id: number) => Promise<boolean>;
+  clearPaneData: (id: number) => Promise<boolean>;
+  exportConfig: () => Promise<{ ok: boolean; path?: string } | null>;
+  importConfig: () => Promise<Config | null>;
+  syncLayout: (layout: LayoutItem[]) => void;
+  onPaneStatus: (callback: (data: PaneStatusPayload) => void) => void;
+}
+
+declare global {
+  interface Window {
+    api: WindowApi;
+  }
 }

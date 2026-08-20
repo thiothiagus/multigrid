@@ -3,10 +3,6 @@ node_modules/
 
 # Build / dist
 dist/
-*.js
-*.map
-!src/*.d.ts
-!tests/*.d.ts
 
 # Cache do electron-builder
 *.cache/
