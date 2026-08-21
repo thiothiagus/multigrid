@@ -331,6 +331,7 @@ function startColResize(g: number) {
       state.colFr[g] = newG;
       state.colFr[g + 1] = newG1;
       applyGridTemplate();
+      syncLayoutToMain();
     }
     function onUp() {
       document.removeEventListener('mousemove', onMove);
@@ -369,6 +370,7 @@ function startRowResize(g: number) {
       state.rowFr[g] = newG;
       state.rowFr[g + 1] = newG1;
       applyGridTemplate();
+      syncLayoutToMain();
     }
     function onUp() {
       document.removeEventListener('mousemove', onMove);

@@ -88,15 +88,21 @@ ipcMain.handle('create-pane', (event, { id, partition, url }) => {
 });
 
 ipcMain.handle('remove-pane', (event, id: number) => {
-  return removePaneView({ win: win!, panes, id, _logger: logger });
+  const entry = panes.get(id);
+  if (entry) removePaneView(entry);
+  return !!entry;
 });
 
 ipcMain.handle('reload-pane', (event, id: number) => {
-  return reloadPaneView({ panes, id, _logger: logger });
+  const entry = panes.get(id);
+  if (entry) reloadPaneView(entry);
+  return !!entry;
 });
 
 ipcMain.handle('back-pane', (event, id: number) => {
-  return backPaneView({ panes, id });
+  const entry = panes.get(id);
+  if (entry) backPaneView(entry);
+  return !!entry;
 });
 
 ipcMain.on(
@@ -125,7 +131,9 @@ ipcMain.handle('save-config', (_event, config: Parameters<typeof saveConfig>[1])
 });
 
 ipcMain.handle('clear-pane-data', (event, id: number) => {
-  return clearPaneDataView({ panes, id, _logger: logger });
+  const entry = panes.get(id);
+  if (entry) clearPaneDataView(entry);
+  return !!entry;
 });
 
 ipcMain.handle('export-config', async () => {
