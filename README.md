@@ -1,5 +1,14 @@
 # Multi-Conta Grid v2
 
+> [!CAUTION]
+> **AVISO CRÍTICO — NÃO EDITE ARQUIVOS `.js`**
+> Este projeto foi **100% migrado para TypeScript**. Os arquivos `.js` na raiz
+> (`main.js`, `preload.js`, `renderer.js`, `logger.js`) e em `src/*.js` são
+> **artefatos gerados pelo build** (`npm run build`). Toda edição deve ser feita
+> nos arquivos **`.ts` correspondentes** — qualquer alteração em `.js` será
+> **sobrescrita no próximo build** e **não entra no git** (`.gitignore`).
+> Veja [Desenvolvimento](#desenvolvimento) e `docs/MIGRACAO_TYPESCRIPT.md` para detalhes.
+
 App de desktop (Electron) para jogar várias contas ao mesmo tempo, em uma
 única janela, cada quadrante com sessão de login independente.
 
@@ -123,11 +132,23 @@ Contém:
 
 ## Desenvolvimento
 
-- Código-fonte em **TypeScript** (`.ts`)
-- Build gera `.js` na raiz e em `src/` (artefatos, não versionados)
+### ⚠️ Fonte vs. Artefato — regra de ouro
+
+| O que editar | Onde está | Versionado? | O que NÃO editar |
+|---|---|---|---|
+| `main.ts`, `preload.ts`, `renderer.ts`, `logger.ts` | raiz | ✅ sim | `main.js`, `preload.js`, `renderer.js`, `logger.js` |
+| `src/*.ts` (`config.ts`, `grid-layout.ts`, `pane-manager.ts`, etc.) | `src/` | ✅ sim | `src/*.js` |
+
+- **Sempre edite `.ts`.** O comando `npm run build` compila todos os `.ts` para `.js`.
+- **Nunca edite `.js` diretamente.** O caso real que motivou este aviso: um bug de layout em `renderer.ts:413-416` foi corrigido por engano em `renderer.js` — a correção sumiu no build seguinte porque `renderer.js` é regenerado a partir de `renderer.ts`.
+- **Como saber se errou o arquivo?** Se `git status` não mostra o arquivo após `git add`, ele está no `.gitignore` (linhas 18-23) e é artefato.
+
+- Código-fonte em **TypeScript** (`.ts`) — 100% dos arquivos de aplicação
+- Build gera `.js` na raiz e em `src/` (artefatos, não versionados, ignorados pelo git)
 - Dois `tsconfig`:
-  - `tsconfig.json` → `module: CommonJS` (main process)
-  - `tsconfig.renderer.json` → `module: ES2022` (renderer, carrega via `<script type="module">`)
+  - `tsconfig.json` → `module: CommonJS` (main process: `main.ts`, `preload.ts`, `logger.ts`, `src/*.ts`)
+  - `tsconfig.renderer.json` → `module: ESNext` + `moduleResolution: bundler` (renderer: `renderer.ts` → ES module carregado via `<script type="module">` em `index.html`)
+- Documentação completa da migração: [`docs/MIGRACAO_TYPESCRIPT.md`](docs/MIGRACAO_TYPESCRIPT.md)
 
 ## Qualidade
 

@@ -1,11 +1,10 @@
 ---
 id: task-001
 title: Completar migração para TypeScript (renderer, grid-layout, pane-manager)
-status: completed
+status: done
 priority: high
 created_at: 2026-08-15
-updated_at: 2026-08-20
-completed_at: 2026-08-20
+updated_at: 2026-08-21
 ---
 
 # Completar migração para TypeScript

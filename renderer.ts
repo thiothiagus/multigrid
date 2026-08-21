@@ -412,8 +412,18 @@ function render() {
 
     const isLastRow = row === rows - 1;
     const itemsInLastRow = state.panes.length - (rows - 1) * cols;
-    paneEl.style.gridColumnEnd =
-      isLastRow && itemsInLastRow < cols ? String(2 * cols) : String(colLine + 1);
+    if (isLastRow && itemsInLastRow < cols) {
+      // Linha incompleta: distribui os itens pela largura total sem
+      // sobreposição e sem deixar espaço vazio (bug das 5 telas).
+      const colInRow = idx - (rows - 1) * cols;
+      const colsPerItem = cols / itemsInLastRow;
+      const startCol = Math.round(colInRow * colsPerItem);
+      const endCol = Math.round((colInRow + 1) * colsPerItem);
+      paneEl.style.gridColumnStart = String(2 * startCol + 1);
+      paneEl.style.gridColumnEnd = String(2 * endCol);
+    } else {
+      paneEl.style.gridColumnEnd = String(colLine + 1);
+    }
     paneEl.style.gridRowEnd = String(rowLine + 1);
 
     gridEl.appendChild(paneEl);
