@@ -10,9 +10,7 @@ import {
   scheduleSaveWinState,
 } from './src/win-state';
 import { getConfigPath, loadConfig, saveConfig } from './src/config';
-import { scheduleRetry } from './src/retry';
 import {
-  showPaneView,
   createPaneView,
   removePaneView,
   reloadPaneView,
@@ -77,6 +75,7 @@ function createWindow(): void {
 }
 
 ipcMain.handle('create-pane', (event, { id, partition, url }) => {
+  if (!win) return false;
   return createPaneView({
     win,
     panes,
@@ -85,17 +84,15 @@ ipcMain.handle('create-pane', (event, { id, partition, url }) => {
     url,
     logger,
     sendStatus,
-    scheduleRetry: (paneId: number, fromCrash: boolean) =>
-      scheduleRetry({ panes, id: paneId, fromCrash, logger, sendStatus, showPaneView }),
   });
 });
 
 ipcMain.handle('remove-pane', (event, id: number) => {
-  return removePaneView({ win, panes, id, logger });
+  return removePaneView({ win: win!, panes, id, _logger: logger });
 });
 
 ipcMain.handle('reload-pane', (event, id: number) => {
-  return reloadPaneView({ panes, id, logger });
+  return reloadPaneView({ panes, id, _logger: logger });
 });
 
 ipcMain.handle('back-pane', (event, id: number) => {
@@ -128,7 +125,7 @@ ipcMain.handle('save-config', (_event, config: Parameters<typeof saveConfig>[1])
 });
 
 ipcMain.handle('clear-pane-data', (event, id: number) => {
-  return clearPaneDataView({ panes, id, logger });
+  return clearPaneDataView({ panes, id, _logger: logger });
 });
 
 ipcMain.handle('export-config', async () => {

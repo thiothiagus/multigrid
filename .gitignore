@@ -1,8 +1,26 @@
 # Dependências
 node_modules/
 
+# Arquivos do inbox
+inbox.md
+resposta.md
+
+# Arquivos de backup
+*.bak
+
+# Configurações TypeScript (exceto as padrões)
+!tsconfig.json
+!tsconfig.renderer.json
+!tsconfig.base.json
+tsconfig.*.json
+
 # Build / dist
 dist/
+main.js
+logger.js
+preload.js
+renderer.js
+src/*.js
 
 # Cache do electron-builder
 *.cache/

@@ -1,4 +1,4 @@
-import { WebContentsView } from 'electron';
+import { BrowserView } from 'electron';
 
 export interface Pane {
   id: number;
@@ -48,7 +48,7 @@ export interface Logger {
 }
 
 export interface PaneEntry {
-  view: WebContentsView;
+  view: BrowserView;
   visible: boolean;
   bounds?: { x: number; y: number; width: number; height: number };
   retryTimer?: NodeJS.Timeout | null;
