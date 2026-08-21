@@ -1,4 +1,4 @@
-import { Logger, PaneEntry } from './types';
+import type { Logger, PaneEntry } from './types';
 
 export interface ScheduleRetryOpts {
   panes: Map<number, PaneEntry>;

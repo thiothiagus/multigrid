@@ -1,4 +1,4 @@
-import { Config } from './types.js';
+import type { Config } from './types.js';
 
 let focusedPaneId: number | null = null;
 

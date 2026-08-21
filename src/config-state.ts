@@ -1,4 +1,4 @@
-import { Config, Pane } from './types';
+import type { Config, Pane } from './types.js';
 
 export const DEFAULT_URL = 'https://poke.idleworld.online/play';
 

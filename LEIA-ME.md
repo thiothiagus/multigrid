@@ -42,7 +42,7 @@ npm run start
 | Comando | Descrição |
 |---------|-----------|
 | `npm run start` | Build + abre o app (Electron) |
-| `npm run build` | Compila TypeScript → JavaScript (roda `tsc`) |
+| `npm run build` | Compila TypeScript → JavaScript (processo principal em CommonJS + renderer em ES modules) |
 | `npm run typecheck` | Verifica tipos sem emitir arquivos |
 | `npm run test` | Roda testes com Vitest |
 | `npm run lint` | ESLint + Prettier |

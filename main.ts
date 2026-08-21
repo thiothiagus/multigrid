@@ -12,12 +12,15 @@ import {
 import { getConfigPath, loadConfig, saveConfig } from './src/config';
 import {
   createPaneView,
-  removePaneView,
+  removePaneEntry,
   reloadPaneView,
   backPaneView,
   clearPaneDataView,
+  scheduleRetry,
+  showPaneView,
+  clearAllPanes,
 } from './src/pane-manager';
-import { PaneEntry } from './src/types';
+import type { PaneEntry } from './src/types';
 
 let win: BrowserWindow | null = null;
 const panes = new Map<number, PaneEntry>();
@@ -84,12 +87,25 @@ ipcMain.handle('create-pane', (event, { id, partition, url }) => {
     url,
     logger,
     sendStatus,
+    onLoadError: (paneId, fromCrash) => {
+      const entry = panes.get(paneId);
+      if (entry) {
+        scheduleRetry({
+          panes,
+          id: paneId,
+          fromCrash,
+          logger,
+          sendStatus,
+          showPaneView,
+        });
+      }
+    },
   });
 });
 
 ipcMain.handle('remove-pane', (event, id: number) => {
   const entry = panes.get(id);
-  if (entry) removePaneView(entry);
+  if (entry) removePaneEntry(panes, id);
   return !!entry;
 });
 
@@ -177,6 +193,10 @@ app.whenReady().then(() => {
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
   });
+});
+
+app.on('before-quit', () => {
+  clearAllPanes(panes);
 });
 
 app.on('window-all-closed', () => {

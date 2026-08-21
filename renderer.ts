@@ -5,15 +5,15 @@ import {
   toggleFocusPane,
   updateFocusState,
   clearFocusIfMatches,
-} from './src/focus-manager.ts';
+} from './src/focus-manager.js';
 import {
   calculatePaneLayout,
   computeGridDims,
   resetFractions,
   GUTTER_PX,
-} from './src/grid-layout.ts';
-import { DEFAULT_URL } from './src/config-state.ts';
-import { Config } from './src/types.ts';
+} from './src/grid-layout.js';
+import { DEFAULT_URL } from './src/config-state.js';
+import type { Config } from './src/types.js';
 
 let state: Config = {
   panes: [],

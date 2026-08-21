@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import { Config, Pane, Logger } from './types';
+import type { Config, Pane, Logger } from './types';
 
 export const DEFAULT_URL = 'https://poke.idleworld.online/play';
 

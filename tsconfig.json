@@ -13,6 +13,7 @@
     "preload.ts",
     "src/config.ts",
     "src/win-state.ts",
-    "src/retry.ts"
+    "src/retry.ts",
+    "src/pane-manager.ts"
   ]
 }

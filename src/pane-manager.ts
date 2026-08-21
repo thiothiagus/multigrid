@@ -1,5 +1,6 @@
 import { BrowserView } from 'electron';
-import { Logger, PaneEntry } from './types';
+import type { Logger, PaneEntry } from './types';
+import { scheduleRetry, cancelRetry } from './retry';
 
 export interface PaneViewParams {
   win: import('electron').BrowserWindow | null;
@@ -9,6 +10,7 @@ export interface PaneViewParams {
   url: string;
   logger: Logger;
   sendStatus: (id: number, status: string, extra?: Record<string, unknown>) => void;
+  onLoadError?: (id: number, fromCrash: boolean) => void;
 }
 
 export function removePaneView(entry: PaneEntry): void {
@@ -16,6 +18,21 @@ export function removePaneView(entry: PaneEntry): void {
   entry.visible = false;
   entry.view.setBounds({ x: 0, y: 0, width: 0, height: 0 });
   entry.view.webContents.close();
+}
+
+export function removePaneEntry(panes: Map<number, PaneEntry>, id: number): void {
+  const entry = panes.get(id);
+  if (entry) {
+    removePaneView(entry);
+    panes.delete(id);
+  }
+}
+
+export function clearAllPanes(panes: Map<number, PaneEntry>): void {
+  panes.forEach(entry => {
+    removePaneView(entry);
+  });
+  panes.clear();
 }
 
 export function reloadPaneView(entry: PaneEntry): void {
@@ -33,6 +50,7 @@ export function backPaneView(entry: PaneEntry): void {
 export function clearPaneDataView(entry: PaneEntry): void {
   if (!entry) return;
   entry.view.webContents.session.clearStorageData();
+  entry.view.webContents.reload();
 }
 
 function showPaneView(entry: PaneEntry): void {
@@ -49,6 +67,7 @@ function createPaneView({
   url,
   logger,
   sendStatus,
+  onLoadError,
 }: PaneViewParams): boolean {
   if (!win || panes.has(id)) return false;
 
@@ -105,6 +124,7 @@ function createPaneView({
         errorCode,
       });
     sendStatus(id, 'error', { errorCode, errorDescription, validatedURL });
+    if (onLoadError) onLoadError(id, false);
   });
 
   view.webContents.on('did-finish-load', () => {
@@ -124,4 +144,4 @@ function createPaneView({
   return true;
 }
 
-export { createPaneView, showPaneView };
+export { createPaneView, showPaneView, scheduleRetry, cancelRetry };

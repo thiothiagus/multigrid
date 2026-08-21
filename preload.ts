@@ -1,5 +1,5 @@
 import { contextBridge, ipcRenderer } from 'electron';
-import { Config, Pane, LayoutItem, PaneStatusPayload } from './src/types';
+import type { Config, Pane, LayoutItem, PaneStatusPayload } from './src/types';
 
 contextBridge.exposeInMainWorld('api', {
   loadConfig: () => ipcRenderer.invoke('load-config'),

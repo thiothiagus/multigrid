@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import { WinState, Logger } from './types';
+import type { WinState, Logger } from './types';
 
 let winState: WinState = { width: 1500, height: 950, isMaximized: false };
 let winStateTimer: NodeJS.Timeout | null = null;
