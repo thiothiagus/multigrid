@@ -2,6 +2,12 @@ import fs from 'fs';
 import path from 'path';
 import type { Config, Pane, Logger } from './types';
 
+// Valores validos para Config.theme. Duplicado de src/theme.ts DE PROPOSITO:
+// config.ts roda no processo main (CommonJS) e NAO pode ter dependencia
+// runtime com modulos do grafo renderer -- a etapa ESNext do build sobrescreve
+// src/*.js com sintaxe ESM, o que quebraria o require() do main.
+const THEME_VALUES: readonly string[] = ['light', 'dark', 'system'];
+
 export const DEFAULT_URL = 'https://poke.idleworld.online/play';
 
 export function getConfigPath(userDataPath: string): string {
@@ -60,6 +66,7 @@ export function normalizeState(saved: Partial<Config>): Config {
     st.nextId = 1 + st.panes.reduce((max: number, p: Pane) => Math.max(max, p.id), 0);
   }
   if (!st.gameUrlDefault) st.gameUrlDefault = DEFAULT_URL;
+  if (typeof st.theme !== 'string' || !THEME_VALUES.includes(st.theme)) delete st.theme;
   st.panes.forEach((p: Pane) => {
     if (!p.label) p.label = 'Conta ' + p.id;
     if (!p.partition) p.partition = 'persist:conta' + p.id;
