@@ -1,20 +1,21 @@
-# Tarefa
+﻿---
+id: task-ID
+title: Título
+status: todo
+priority: medium
+created_at: YYYY-MM-DD
+---
 
-Descreva a tarefa usando esta estrutura.
+# Título
 
-## Contexto
-
+## Descrição
 Por que esta tarefa existe? Qual problema ela resolve?
 
-## Objetivo
+## Critérios de aceitação
 
-O que deve ser entregue?
+- [ ] Critério de aceitação 1
+- [ ] Critério de aceitação 2
 
-## Critérios de aceite
+## Notas
 
-- [ ] Critério 1
-- [ ] Critério 2
-
-## Restrições
-
-- Restrição 1
+_Adicione notas sobre o progresso ou decisões aqui._

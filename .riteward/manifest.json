@@ -1,0 +1,17 @@
+{
+	"ritewardVersion": "0.1.4",
+	"configSchemaVersion": "1",
+	"updatedAt": "2026-08-22T23:04:30.705Z",
+	"files": {
+		".riteward/constitution.md": "976d5fad1708b955ba53cd6d584e260e9c266794cac2d3ea1e6577cae48b9f7b",
+		".riteward/workflows/feature.md": "db7fc064c0aa58cc74dd9cdfb3885ab8e5228a3c13b600ec1baa139016c9b5dd",
+		".riteward/templates/task.md": "c8c9d77625570f7d4381e578d6d3c0a3a66f1e332500ac484f3581802a169cab",
+		".riteward/templates/plan.md": "2b49348958f9a77768368672772ed2295e6daf6f78d515e6bbeef41677a91d42",
+		".riteward/templates/review.md": "4fb04df1fbc18578855d708d1fee0087fcd7dbdb30eb22bffa0678c9bfc4a82b",
+		".riteward/templates/decision.md": "742a6d27310f8224cf8c0c8202bb33a6621aebcace1e49ffa730eed8b2d3eb25",
+		"inbox.md": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+		".riteward/config.yaml": "54ce681e68dbba8835562dbe4b2f3afac7f3094c3dc79b6a52bb4770b6e4e39d",
+		".riteward/AGENTS.md": "b384652331e628d9437e05055e689add87155930f291e8c443c2e6e6ac7c9417",
+		".riteward/tasks/task-setup.md": "26d8cfa35e4abdc2151f35b3a01a7de203c23e15370e996fd33ea74e569fc8d1"
+	}
+}

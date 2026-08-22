@@ -17,6 +17,7 @@ Este arquivo resume o essencial. A referência completa e autoexplicativa é a p
 
 - `riteward docs` — guia completo embutido: conceitos de estado, fluxo típico, dúvidas frequentes e todos os comandos com flags, valores aceitos e exemplos.
 - `riteward <comando> --help` — uso específico de cada comando (ex.: `riteward task update --help`).
+- `riteward changelog` — novidades entre a versão do Riteward instalada neste projeto e a versão da CLI.
 
 Não é necessário ler código-fonte do Riteward para operá-lo: o help e as mensagens de erro listam os valores válidos.
 
@@ -24,9 +25,10 @@ Não é necessário ler código-fonte do Riteward para operá-lo: o help e as me
 
 Antes de qualquer alteração, entenda o contexto:
 
-1. Leia `.riteward/constitution.md` para conhecer as regras e políticas.
-2. Execute `riteward status` para ver o estado atual do projeto, tarefas e workflows ativos.
-3. Verifique se há uma tarefa atribuída com `riteward task list`. Se precisar de detalhes sobre uma tarefa, use `riteward task show <task-id>`.
+1. Leia `inbox.md` na raiz do projeto (ou use `riteward show inbox`): é a fila de instruções do usuário para os agentes. Trate os itens pendentes como prioridade de entrada.
+2. Leia `.riteward/constitution.md` para conhecer as regras e políticas.
+3. Execute `riteward status` para ver o estado atual do projeto, tarefas e workflows ativos.
+4. Verifique se há uma tarefa atribuída com `riteward task list`. Se precisar de detalhes sobre uma tarefa, use `riteward task show <task-id>`.
 
 ## Fluxo de trabalho
 
@@ -54,7 +56,7 @@ Nota: "status" (da tarefa: todo, in_progress, blocked, done, cancelled) é difer
 - **IMPLEMENTATION**: implemente a solução conforme o plano.
 - **TESTING**: execute `riteward check` para rodar os quality gates. Corrija falhas antes de avançar.
 - **REVIEW**: faça uma revisão crítica usando `.riteward/templates/review.md` como modelo. Se encontrar problemas, volte para IMPLEMENTATION.
-- **READY_FOR_COMMIT**: todos os critérios de aceitação devem estar cumpridos. Aguarde aprovação humana.
+- **READY_FOR_COMMIT**: todos os critérios de aceitação devem estar cumpridos. Aguarde aprovação humana. Se o usuário reprovar (ex.: falha no teste manual), retorne a IMPLEMENTATION com motivo: `riteward workflow advance <task-id> --to IMPLEMENTATION --reason "motivo da reprovação"`.
 - **COMPLETED**: tarefa finalizada.
 
 ## Registros
@@ -80,6 +82,25 @@ riteward logs check --create-tasks
 ```
 
 A configuração de logs é opcional. Se nenhum arquivo de log estiver configurado, o comando não fará nada.
+
+## Atualização e versionamento do Riteward
+
+A versão da CLI pode ser consultada com `riteward --version`; a versão que gerou a estrutura deste projeto está em `.riteward/manifest.json` e aparece em `riteward status`.
+
+**Nunca atualize o Riteward por iniciativa própria** — nem no início da sessão, nem durante uma tarefa. Atualizar modifica arquivos gerenciados e sujaria o working tree com mudanças fora do escopo da tarefa. Se `riteward status` indicar divergência entre a versão instalada e a da CLI, apenas informe o usuário e aguarde a instrução dele.
+
+Somente quando o usuário pedir explicitamente para atualizar, execute o fluxo:
+
+1. Veja o que mudaria, sem gravar nada: `riteward update --dry-run`.
+2. Revise os conflitos com o usuário. Arquivos editados manualmente NÃO são sobrescritos por padrão; só use `--force` com autorização explícita.
+3. Aplique: `riteward update`.
+4. Mostre ao usuário o que mudou entre versões: `riteward changelog`.
+
+Regras invioláveis:
+
+- **NUNCA atualize apagando arquivos `.riteward/` e rodando `riteward init` de novo** — isso perde configurações, tarefas e histórico de workflow.
+- O merge do `config.yaml` é aditivo: chaves novas entram, valores existentes são preservados.
+- Commitar o `.riteward/manifest.json` junto ao projeto: é ele que registra qual versão instalou o quê.
 
 ## Regras
 
