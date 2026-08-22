@@ -1,5 +1,8 @@
 # Multi-Conta Grid v2
 
+[![CI](https://github.com/USER/REPO/actions/workflows/ci.yml/badge.svg)](https://github.com/USER/REPO/actions/workflows/ci.yml)
+<!-- Substitua USER/REPO pelo seu owner/repo no GitHub após push do repositório -->
+
 > [!CAUTION]
 > **AVISO CRÍTICO — NÃO EDITE ARQUIVOS `.js`**
 > Este projeto foi **100% migrado para TypeScript**. Os arquivos `.js` na raiz
