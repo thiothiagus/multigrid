@@ -17,6 +17,15 @@ App de desktop (Electron) para jogar várias contas ao mesmo tempo, em uma
 - **Tela inicial**: escolha quantas contas quer (1 a 9) e a URL do jogo.
 - **Divisórias arrastáveis**: passe o mouse na linha entre dois painéis e
   arraste para redimensionar.
+- **Modo foco**: duplo clique no cabeçalho (ou botão ⛶) maximiza um painel
+  sem fechar as outras contas.
+- **Presets de layout**: menu `Layout…` na barra superior aplica arranjos
+  prontos em um clique — Igual, Colunas (tudo em uma linha), Linhas (tudo em
+  uma coluna) e "Focar conta N" (a conta escolhida fica ~2,5× maior que as
+  irmãs, sem esconder ninguém). Salve seus próprios layouts com `Salvar
+  layout`, reaplique-os pelo grupo "Meus presets" e exclua com o botão ×;
+  `Resetar layout` devolve o arranjo automático da grade. O redimensionamento
+  manual continua funcionando e prevalece até você escolher um preset.
 - **+ Conta / ×**: adicione contas a qualquer momento pelo botão no topo,
   ou feche uma clicando no × do cabeçalho dela.
 - **Renomear**: clique no nome de cada conta (ex: "Conta 1") pra editar.
@@ -73,16 +82,17 @@ multiconta-grid-v3/
 │   │   ├── config.ts           # Caminhos de arquivo, DEFAULT_URL
 │   │   ├── config-state.ts     # Estado padrão, normalização, computeGridDims
 │   │   ├── grid-layout.ts      # Cálculo de layout CSS Grid, frações, resizers
+│   │   ├── layout-presets.ts   # Presets de layout (Igual, Colunas, Linhas, Focar, personalizados)
 │   │   ├── pane-manager.ts     # Criação/remoção/atualização de BrowserViews
 │   │   ├── pane-ui.ts          # Atualização de status (bolinha, overlay)
 │   │   ├── focus-manager.ts    # Estado de foco (modo foco painel)
 │   │   ├── win-state.ts        # Persistência de geometria da janela
 │   │   ├── retry.ts            # Lógica de retry com backoff exponencial
-│   │   ├── types.ts            # Interfaces TypeScript compartilhadas
-│   │   └── win-state.ts        # Estado da janela
+│   │   └── types.ts            # Interfaces TypeScript compartilhadas
 │   ├── tests/           # Testes automatizados (Vitest)
 │   │   ├── config.test.ts
 │   │   ├── grid-layout.test.ts
+│   │   ├── layout-presets.test.ts
 │   │   ├── retry.test.ts
 │   │   └── win-state.test.ts
 │   ├── tsconfig.json          # Main process (CommonJS)
@@ -129,6 +139,8 @@ Contém:
 - `cols`, `rows`: grade atual
 - `colFr`, `rowFr`: frações CSS Grid (1fr = tamanho igual)
 - `panes[]`: array de `{id, label, partition, url}`
+- `customPresets[]`: presets personalizados de layout salvos pelo usuário,
+  array de `{name, cols, rows, colFr, rowFr}`
 
 ## Desenvolvimento
 
@@ -153,7 +165,7 @@ Contém:
 ## Qualidade
 
 - `npm run typecheck` — `tsc --noEmit` nos dois tsconfig
-- `npm run test` — Vitest (24 testes cobrindo config, grid-layout, retry, win-state)
+- `npm run test` — Vitest (45 testes cobrindo config, grid-layout, layout-presets, retry, win-state)
 - `npm run lint` — ESLint + Prettier (regras TypeScript recomendadas)
 - `npm run format:check` — Prettier check
 - `riteward check` — executa todos os quality gates acima
