@@ -97,6 +97,6 @@ Sempre que modificar arquivos que afetam a suíte de qualidade, verifique e atua
 - **`package.json`** (scripts: test, lint, typecheck) → atualizar gates correspondentes.
 - **Instalação de devDependencies** (vitest, eslint, tsc, etc.) → verificar se há novo script e adicionar gate.
 - **Criação de arquivos de teste** → confirmar que o gate `test` existe e funciona.
-- **Criação de config de lint/typecheck** (`.eslintrc`, `tsconfig.json`) → confirmar que os gates `lint`/`typecheck` existentes.
+- **Criação de config de lint/typecheck** (`.eslintrc`, `tsconfig.json`) → confirmar que os gates `lint`/`typecheck` existem.
 
 Após cada atualização, valide com `riteward check`.
