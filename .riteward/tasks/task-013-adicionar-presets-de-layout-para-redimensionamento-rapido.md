@@ -1,7 +1,7 @@
 ---
 id: task-013
 title: Adicionar presets de layout para redimensionamento rapido
-status: todo
+status: done
 priority: high
 created_at: 2026-08-15
 ---

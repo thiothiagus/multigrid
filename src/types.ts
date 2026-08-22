@@ -7,6 +7,14 @@ export interface Pane {
   url: string;
 }
 
+export interface LayoutPreset {
+  name: string;
+  cols: number;
+  rows: number;
+  colFr: number[];
+  rowFr: number[];
+}
+
 export interface Config {
   gameUrlDefault?: string;
   nextId: number;
@@ -15,6 +23,7 @@ export interface Config {
   colFr: number[];
   rowFr: number[];
   panes: Pane[];
+  customPresets?: LayoutPreset[];
 }
 
 export interface WinState {

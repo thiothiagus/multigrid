@@ -13,7 +13,17 @@ import {
   GUTTER_PX,
 } from './src/grid-layout.js';
 import { DEFAULT_URL } from './src/config-state.js';
-import type { Config } from './src/types.js';
+import {
+  applyEqualPreset,
+  applyAutoPreset,
+  applyColumnsPreset,
+  applyRowsPreset,
+  applyFocusPreset,
+  snapshotPreset,
+  normalizeCustomPreset,
+  fitPresetToPaneCount,
+} from './src/layout-presets.js';
+import type { Config, LayoutPreset } from './src/types.js';
 
 let state: Config = {
   panes: [],
@@ -23,6 +33,7 @@ let state: Config = {
   colFr: [1],
   rowFr: [1],
   gameUrlDefault: DEFAULT_URL,
+  customPresets: [],
 };
 let persistTimer: ReturnType<typeof setTimeout> | null = null;
 let syncScheduled = false;
@@ -77,6 +88,7 @@ function initFromScratch(n: number, url: string) {
     colFr: new Array(dims.cols).fill(1),
     rowFr: new Array(dims.rows).fill(1),
     panes: [],
+    customPresets: state.customPresets ?? [],
   };
   for (let i = 1; i <= n; i++) {
     state.panes.push({ id: i, label: 'Conta ' + i, partition: 'persist:conta' + i, url });
@@ -382,6 +394,140 @@ function startRowResize(g: number) {
   };
 }
 
+// ---------------------------------------------------------------------
+// Presets de layout (toolbar)
+// ---------------------------------------------------------------------
+
+function getCustomPresets(): LayoutPreset[] {
+  if (!state.customPresets) state.customPresets = [];
+  return state.customPresets;
+}
+
+function updateDeleteBtnVisibility(selectedValue: string) {
+  const btn = document.getElementById('delete-preset-btn');
+  if (btn) btn.classList.toggle('hidden', !selectedValue.startsWith('custom:'));
+}
+
+// Reconstrui as opcoes do select de presets: basicos, "Focar conta" (uma por
+// painel aberto) e "Meus presets" (personalizados salvos no config).
+function refreshPresetSelect() {
+  const sel = document.getElementById('layout-preset-select') as HTMLSelectElement | null;
+  if (!sel) return;
+  sel.innerHTML = '';
+
+  const placeholder = document.createElement('option');
+  placeholder.value = '';
+  placeholder.disabled = true;
+  placeholder.selected = true;
+  placeholder.textContent = 'Layout…';
+  sel.appendChild(placeholder);
+
+  const basics: Array<[string, string]> = [
+    ['equal', 'Igual'],
+    ['columns', 'Colunas'],
+    ['rows', 'Linhas'],
+  ];
+  const basicGroup = document.createElement('optgroup');
+  basicGroup.label = 'Presets';
+  basics.forEach(([value, label]) => {
+    const opt = document.createElement('option');
+    opt.value = value;
+    opt.textContent = label;
+    basicGroup.appendChild(opt);
+  });
+  sel.appendChild(basicGroup);
+
+  if (state.panes.length > 1) {
+    const focusGroup = document.createElement('optgroup');
+    focusGroup.label = 'Focar conta';
+    state.panes.forEach(p => {
+      const opt = document.createElement('option');
+      opt.value = 'focus:' + p.id;
+      opt.textContent = 'Focar ' + p.label;
+      focusGroup.appendChild(opt);
+    });
+    sel.appendChild(focusGroup);
+  }
+
+  const customs = getCustomPresets();
+  if (customs.length > 0) {
+    const customGroup = document.createElement('optgroup');
+    customGroup.label = 'Meus presets';
+    customs.forEach((p, i) => {
+      const opt = document.createElement('option');
+      opt.value = 'custom:' + i;
+      opt.textContent = p.name;
+      customGroup.appendChild(opt);
+    });
+    sel.appendChild(customGroup);
+  }
+}
+
+function handlePresetSelection(value: string) {
+  if (value === 'equal') {
+    applyEqualPreset(state);
+    applyGridTemplate();
+  } else if (value === 'columns' || value === 'rows') {
+    const n = Math.max(1, state.panes.length || 1);
+    if (value === 'columns') applyColumnsPreset(state, n);
+    else applyRowsPreset(state, n);
+    render();
+  } else if (value.startsWith('focus:')) {
+    const paneId = Number(value.slice(6));
+    const idx = state.panes.findIndex(p => p.id === paneId);
+    // Com uma unica celula nao ha o que destacar.
+    if (idx >= 0 && state.cols * state.rows > 1) applyFocusPreset(state, idx);
+    else return;
+    applyGridTemplate();
+  } else if (value.startsWith('custom:')) {
+    const preset = normalizeCustomPreset(getCustomPresets()[Number(value.slice(7))]);
+    if (!preset) return;
+    const fitted = fitPresetToPaneCount(preset, Math.max(1, state.panes.length));
+    state.cols = fitted.cols;
+    state.rows = fitted.rows;
+    state.colFr = fitted.colFr;
+    state.rowFr = fitted.rowFr;
+    render();
+  } else {
+    return;
+  }
+  syncLayoutToMain();
+  persist();
+}
+
+function openSaveBox() {
+  const box = document.getElementById('preset-save-box');
+  const input = document.getElementById('preset-name-input') as HTMLInputElement | null;
+  if (box && input) {
+    box.classList.remove('hidden');
+    input.focus();
+    input.select();
+  }
+}
+
+function closeSaveBox() {
+  const box = document.getElementById('preset-save-box');
+  const input = document.getElementById('preset-name-input') as HTMLInputElement | null;
+  if (box) box.classList.add('hidden');
+  if (input) input.value = '';
+}
+
+function saveCustomPreset() {
+  const input = document.getElementById('preset-name-input') as HTMLInputElement | null;
+  if (state.panes.length === 0) {
+    closeSaveBox();
+    return;
+  }
+  const name =
+    input && input.value.trim()
+      ? input.value.trim()
+      : 'Meu layout ' + (getCustomPresets().length + 1);
+  getCustomPresets().push(snapshotPreset(state, name));
+  closeSaveBox();
+  refreshPresetSelect();
+  persist();
+}
+
 // Reconstroi a grade (cabecalhos + areas reservadas + resizers). So chamada
 // em mudancas estruturais (iniciar, adicionar, remover conta). As
 // BrowserViews em si nao sao recriadas aqui -- so posicionadas depois via
@@ -452,6 +598,7 @@ function render() {
   }
 
   updateFocusState(state, gridEl);
+  refreshPresetSelect();
 }
 
 // ---------------------------------------------------------------------
@@ -459,6 +606,60 @@ function render() {
 // ---------------------------------------------------------------------
 
 document.getElementById('add-pane-btn')!.addEventListener('click', addPane);
+
+// --- Presets de layout ---
+
+// Resetar layout = volta ao layout automatico da grade (dims padrao para o
+// numero de contas abertas + fracoes iguais). O preset "Igual" do menu, por
+// sua vez, apenas iguala as fracoes mantendo a estrutura atual.
+document.getElementById('reset-layout-btn')!.addEventListener('click', () => {
+  applyAutoPreset(state, Math.max(1, state.panes.length || 1));
+  render();
+  syncLayoutToMain();
+  persist();
+});
+
+const presetSelect = document.getElementById('layout-preset-select') as HTMLSelectElement;
+let lastSelectedPreset = '';
+presetSelect.addEventListener('change', () => {
+  const value = presetSelect.value;
+  if (!value) return;
+  lastSelectedPreset = value.startsWith('custom:') ? value : '';
+  handlePresetSelection(value);
+  presetSelect.value = ''; // volta ao placeholder para permitir reaplicar
+  updateDeleteBtnVisibility(lastSelectedPreset);
+});
+
+document.getElementById('delete-preset-btn')!.addEventListener('click', () => {
+  if (!lastSelectedPreset.startsWith('custom:')) return;
+  const idx = Number(lastSelectedPreset.slice(7));
+  const presets = getCustomPresets();
+  const preset = presets[idx];
+  if (!preset) return;
+  if (window.confirm(`Excluir o preset "${preset.name}"?`)) {
+    presets.splice(idx, 1);
+    lastSelectedPreset = '';
+    updateDeleteBtnVisibility('');
+    refreshPresetSelect();
+    persist();
+  }
+});
+
+document.getElementById('save-preset-btn')!.addEventListener('click', openSaveBox);
+document.getElementById('preset-save-confirm')!.addEventListener('click', saveCustomPreset);
+document.getElementById('preset-name-input')!.addEventListener('keydown', e => {
+  if (e.key === 'Enter') saveCustomPreset();
+  if (e.key === 'Escape') closeSaveBox();
+});
+// Fecha o popover de salvamento ao clicar fora dele
+document.addEventListener('click', e => {
+  const target = e.target as HTMLElement;
+  if (target.closest('#preset-save-box') || target.closest('#save-preset-btn')) return;
+  closeSaveBox();
+});
+
+refreshPresetSelect();
+
 document.getElementById('setup-start-btn')!.addEventListener('click', async () => {
   const n = Math.max(
     1,

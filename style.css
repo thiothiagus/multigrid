@@ -48,6 +48,49 @@ html, body {
 }
 #toolbar button:hover { background: var(--accent); border-color: var(--accent); color: #fff; }
 
+#toolbar-actions { display: flex; align-items: center; gap: 6px; position: relative; }
+
+#layout-preset-select {
+  background: transparent;
+  border: 1px solid #3a3d44;
+  color: var(--text);
+  border-radius: 4px;
+  padding: 3px 6px;
+  font-size: 11px;
+  cursor: pointer;
+  max-width: 160px;
+}
+#layout-preset-select option,
+#layout-preset-select optgroup {
+  background: var(--header-bg);
+  color: var(--text);
+}
+
+/* Popover para nomear um preset personalizado antes de salvar */
+#preset-save-box {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 50;
+  display: flex;
+  gap: 6px;
+  padding: 8px;
+  background: var(--header-bg);
+  border: 1px solid var(--pane-border);
+  border-radius: 6px;
+}
+#preset-save-box input {
+  background: var(--bg);
+  border: 1px solid #3a3d44;
+  color: var(--text);
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 11px;
+  width: 150px;
+  outline: none;
+}
+#preset-save-box input:focus { border-color: var(--accent); }
+
 /* --- Tela de setup inicial --- */
 
 #setup-screen {

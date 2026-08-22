@@ -18,7 +18,17 @@
   <div id="toolbar">
     <span id="toolbar-title">Multi-Conta Grid</span>
     <div id="toolbar-actions">
+          <select id="layout-preset-select" title="Aplicar preset de layout">
+            <option value="" disabled selected>Layout…</option>
+          </select>
+          <button id="delete-preset-btn" class="hidden" title="Excluir preset personalizado selecionado">&#215;</button>
+          <button id="save-preset-btn" title="Salvar layout atual como preset">Salvar layout</button>
+          <button id="reset-layout-btn" title="Voltar ao layout automático da grade (padrão)">Resetar layout</button>
           <button id="add-pane-btn" title="Adicionar conta">+ Conta</button>
+          <div id="preset-save-box" class="hidden">
+            <input type="text" id="preset-name-input" maxlength="40" placeholder="Nome do preset">
+            <button id="preset-save-confirm">Salvar</button>
+          </div>
       </div>
   </div>
 
