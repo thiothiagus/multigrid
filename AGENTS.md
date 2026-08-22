@@ -11,6 +11,15 @@
 
 Este projeto usa o Riteward para governança de workflow e qualidade.
 
+## Referência de uso
+
+Este arquivo resume o essencial. A referência completa e autoexplicativa é a própria CLI:
+
+- `riteward docs` — guia completo embutido: conceitos de estado, fluxo típico, dúvidas frequentes e todos os comandos com flags, valores aceitos e exemplos.
+- `riteward <comando> --help` — uso específico de cada comando (ex.: `riteward task update --help`).
+
+Não é necessário ler código-fonte do Riteward para operá-lo: o help e as mensagens de erro listam os valores válidos.
+
 ## Como trabalhar neste projeto
 
 Antes de qualquer alteração, entenda o contexto:
@@ -33,6 +42,10 @@ Se houver uma tarefa atribuída, siga o workflow:
 Estados do workflow (na ordem típica): DISCOVERY, PLANNING, IMPLEMENTATION, TESTING, REVIEW, READY_FOR_COMMIT, COMPLETED.
 
 O workflow pode ir para BLOCKED a qualquer momento e voltar ao estado anterior quando o bloqueio for resolvido. Para encerrar uma tarefa sem concluí-la, cancele o workflow: `riteward workflow cancel <task-id> --reason "motivo"` (estado terminal CANCELLED).
+
+Precisou retomar uma tarefa já concluída (COMPLETED) ou cancelada (CANCELLED)? Reabra o workflow: `riteward workflow reopen <task-id> --reason "motivo"` — ele volta ao estado IMPLEMENTATION e o status da tarefa é ressincronizado.
+
+Nota: "status" (da tarefa: todo, in_progress, blocked, done, cancelled) é diferente de "current_state" (do workflow: DISCOVERY ... CANCELLED). O status é sincronizado automaticamente a cada transição; `riteward task show <task-id>` exibe os dois lado a lado e avisa se houver divergência. `riteward status` lista inconsistências do projeto inteiro.
 
 ## Artefatos por estado
 
@@ -84,6 +97,6 @@ Sempre que modificar arquivos que afetam a suíte de qualidade, verifique e atua
 - **`package.json`** (scripts: test, lint, typecheck) → atualizar gates correspondentes.
 - **Instalação de devDependencies** (vitest, eslint, tsc, etc.) → verificar se há novo script e adicionar gate.
 - **Criação de arquivos de teste** → confirmar que o gate `test` existe e funciona.
-- **Criação de config de lint/typecheck** (`.eslintrc`, `tsconfig.json`) → confirmar que os gates `lint`/`typecheck` existem.
+- **Criação de config de lint/typecheck** (`.eslintrc`, `tsconfig.json`) → confirmar que os gates `lint`/`typecheck` existentes.
 
 Após cada atualização, valide com `riteward check`.
