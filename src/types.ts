@@ -1,4 +1,5 @@
 import { BrowserView } from 'electron';
+import type { ThemePreference } from './theme';
 
 export interface Pane {
   id: number;
@@ -24,6 +25,7 @@ export interface Config {
   rowFr: number[];
   panes: Pane[];
   customPresets?: LayoutPreset[];
+  theme?: ThemePreference;
 }
 
 export interface WinState {

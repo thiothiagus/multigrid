@@ -1,7 +1,7 @@
 ---
 id: task-007
 title: Adicionar sistema de temas (claro/escuro)
-status: todo
+status: done
 priority: low
 created_at: 2026-08-15
 ---

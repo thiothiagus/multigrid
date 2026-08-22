@@ -13,6 +13,8 @@ import {
   GUTTER_PX,
 } from './src/grid-layout.js';
 import { DEFAULT_URL } from './src/config-state.js';
+import { applyTheme, isValidTheme, nextThemePreference, resolveTheme } from './src/theme.js';
+import type { ThemePreference } from './src/theme.js';
 import {
   applyEqualPreset,
   applyAutoPreset,
@@ -600,6 +602,53 @@ function render() {
   updateFocusState(state, gridEl);
   refreshPresetSelect();
 }
+
+// ---------------------------------------------------------------------
+// Tema (claro/escuro)
+// ---------------------------------------------------------------------
+
+const systemDarkQuery = window.matchMedia('(prefers-color-scheme: dark)');
+let themePref: ThemePreference = 'system';
+
+const themeToggleBtn = document.getElementById('theme-toggle-btn') as HTMLButtonElement | null;
+
+// Icone mostra o tema DESTINO do clique (sol quando esta escuro, lua quando claro)
+function refreshThemeToggle() {
+  if (!themeToggleBtn) return;
+  const goingLight = resolveTheme(themePref, systemDarkQuery.matches) === 'dark';
+  themeToggleBtn.textContent = goingLight ? '\u2600' : '\u263E';
+  themeToggleBtn.title = goingLight ? 'Mudar para tema claro' : 'Mudar para tema escuro';
+}
+
+function setTheme(pref: ThemePreference) {
+  themePref = pref;
+  applyTheme(document.documentElement, pref, systemDarkQuery.matches);
+  refreshThemeToggle();
+}
+
+themeToggleBtn?.addEventListener('click', () => {
+  setTheme(nextThemePreference(themePref, systemDarkQuery.matches));
+  persist();
+});
+
+// Enquanto a preferencia e "seguir o SO", mudancas de tema do sistema sao
+// aplicadas na hora; escolha explicita do usuario ignora o evento.
+systemDarkQuery.addEventListener('change', () => {
+  if (themePref === 'system') {
+    applyTheme(document.documentElement, 'system', systemDarkQuery.matches);
+    refreshThemeToggle();
+  }
+});
+
+setTheme('system');
+
+// A preferencia salva no config sobrepoe a deteccao do SO assim que chegar
+window.api
+  .loadConfig()
+  .then(saved => {
+    if (saved && isValidTheme(saved.theme)) setTheme(saved.theme);
+  })
+  .catch(() => {});
 
 // ---------------------------------------------------------------------
 // Inicializacao

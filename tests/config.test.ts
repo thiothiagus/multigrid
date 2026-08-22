@@ -101,6 +101,17 @@ describe('config module', () => {
       expect(norm.panes).toEqual([]);
     });
 
+    it('preserves a valid theme preference', () => {
+      expect(normalizeState({ theme: 'light' }).theme).toBe('light');
+      expect(normalizeState({ theme: 'dark' }).theme).toBe('dark');
+      expect(normalizeState({ theme: 'system' }).theme).toBe('system');
+    });
+
+    it('removes an invalid theme preference', () => {
+      const norm = normalizeState({ theme: 'blue' } as Partial<Config>);
+      expect('theme' in norm).toBe(false);
+    });
+
     it('filters invalid panes and recalculates dimensions', () => {
       const corrupt = {
         panes: [
