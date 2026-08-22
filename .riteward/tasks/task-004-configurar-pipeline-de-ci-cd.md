@@ -1,7 +1,7 @@
 ---
 id: task-004
 title: Configurar pipeline de CI/CD
-status: todo
+status: done
 priority: medium
 created_at: 2026-08-15
 ---
