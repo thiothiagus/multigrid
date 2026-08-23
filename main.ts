@@ -9,7 +9,7 @@ import {
   saveWinState,
   scheduleSaveWinState,
 } from './src/win-state';
-import { getConfigPath, loadConfig, saveConfig } from './src/config';
+import { getConfigPath, loadConfig, saveConfig, migrateLegacyConfig } from './src/config';
 import {
   createPaneView,
   removePaneEntry,
@@ -158,7 +158,7 @@ ipcMain.handle('export-config', async () => {
     if (!win) return { ok: false, reason: 'no-window' };
     const { canceled, filePath } = await dialog.showSaveDialog(win, {
       title: 'Exportar configuração (backup)',
-      defaultPath: 'multiconta-config.json',
+      defaultPath: 'pokegrid-config.json',
       filters: [{ name: 'JSON', extensions: ['json'] }],
     });
     if (canceled || !filePath) return { ok: false, reason: 'canceled' };
@@ -189,6 +189,7 @@ ipcMain.handle('import-config', async () => {
 });
 
 app.whenReady().then(() => {
+  migrateLegacyConfig(app.getPath('userData'), logger);
   createWindow();
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();

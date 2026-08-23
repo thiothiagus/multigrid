@@ -1,6 +1,7 @@
 # PokeGrid v2
 
 [![CI](https://github.com/USER/REPO/actions/workflows/ci.yml/badge.svg)](https://github.com/USER/REPO/actions/workflows/ci.yml)
+
 <!-- Substitua USER/REPO pelo seu owner/repo no GitHub após push do repositório -->
 
 > [!CAUTION]
@@ -60,15 +61,15 @@ npm run start
 
 ## Scripts disponíveis
 
-| Comando | Descrição |
-|---------|-----------|
-| `npm run start` | Build + abre o app (Electron) |
-| `npm run build` | Compila TypeScript → JavaScript (processo principal em CommonJS + renderer em ES modules) |
-| `npm run typecheck` | Verifica tipos sem emitir arquivos |
-| `npm run test` | Roda testes com Vitest |
-| `npm run lint` | ESLint + Prettier |
-| `npm run format` | Formata código com Prettier |
-| `npm run dist` | Gera instalador Windows (electron-builder) |
+| Comando             | Descrição                                                                                 |
+| ------------------- | ----------------------------------------------------------------------------------------- |
+| `npm run start`     | Build + abre o app (Electron)                                                             |
+| `npm run build`     | Compila TypeScript → JavaScript (processo principal em CommonJS + renderer em ES modules) |
+| `npm run typecheck` | Verifica tipos sem emitir arquivos                                                        |
+| `npm run test`      | Roda testes com Vitest                                                                    |
+| `npm run lint`      | ESLint + Prettier                                                                         |
+| `npm run format`    | Formata código com Prettier                                                               |
+| `npm run dist`      | Gera instalador Windows (electron-builder)                                                |
 
 ## Estrutura do projeto
 
@@ -132,9 +133,13 @@ Não há vazamento de sessão entre contas.
 
 ## Configuração persistida
 
-Arquivo: `%APPDATA%/pokegrid/multiconta-config.json`
+Arquivo: `%APPDATA%/pokegrid/pokegrid-config.json`
+
+Na primeira execução após a renomeação do projeto, o arquivo legado
+`multiconta-config.json` é renomeado automaticamente para o novo nome.
 
 Contém:
+
 - `gameUrlDefault`: URL padrão para novas contas
 - `nextId`: próximo ID sequencial
 - `cols`, `rows`: grade atual
@@ -147,20 +152,26 @@ Contém:
 
 ### ⚠️ Fonte vs. Artefato — regra de ouro
 
-| O que editar | Onde está | Versionado? | O que NÃO editar |
-|---|---|---|---|
-| `main.ts`, `preload.ts`, `renderer.ts`, `logger.ts` | raiz | ✅ sim | `main.js`, `preload.js`, `renderer.js`, `logger.js` |
-| `src/*.ts` (`config.ts`, `grid-layout.ts`, `pane-manager.ts`, etc.) | `src/` | ✅ sim | `src/*.js` |
+| O que editar                                                        | Onde está | Versionado? | O que NÃO editar                                    |
+| ------------------------------------------------------------------- | --------- | ----------- | --------------------------------------------------- |
+| `main.ts`, `preload.ts`, `renderer.ts`, `logger.ts`                 | raiz      | ✅ sim       | `main.js`, `preload.js`, `renderer.js`, `logger.js` |
+| `src/*.ts` (`config.ts`, `grid-layout.ts`, `pane-manager.ts`, etc.) | `src/`    | ✅ sim       | `src/*.js`                                          |
 
 - **Sempre edite `.ts`.** O comando `npm run build` compila todos os `.ts` para `.js`.
+
 - **Nunca edite `.js` diretamente.** O caso real que motivou este aviso: um bug de layout em `renderer.ts:413-416` foi corrigido por engano em `renderer.js` — a correção sumiu no build seguinte porque `renderer.js` é regenerado a partir de `renderer.ts`.
+
 - **Como saber se errou o arquivo?** Se `git status` não mostra o arquivo após `git add`, ele está no `.gitignore` (linhas 18-23) e é artefato.
 
 - Código-fonte em **TypeScript** (`.ts`) — 100% dos arquivos de aplicação
+
 - Build gera `.js` na raiz e em `src/` (artefatos, não versionados, ignorados pelo git)
+
 - Dois `tsconfig`:
+
   - `tsconfig.json` → `module: CommonJS` (main process: `main.ts`, `preload.ts`, `logger.ts`, `src/*.ts`)
   - `tsconfig.renderer.json` → `module: ESNext` + `moduleResolution: bundler` (renderer: `renderer.ts` → ES module carregado via `<script type="module">` em `index.html`)
+
 - Documentação completa da migração: [`docs/MIGRACAO_TYPESCRIPT.md`](docs/MIGRACAO_TYPESCRIPT.md)
 
 ## Qualidade

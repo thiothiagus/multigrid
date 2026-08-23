@@ -8,6 +8,9 @@ import {
   saveConfig,
   computeGridDims,
   normalizeState,
+  migrateLegacyConfig,
+  CONFIG_FILENAME,
+  LEGACY_CONFIG_FILENAME,
   DEFAULT_URL,
 } from '../src/config.ts';
 import { Config } from '../src/types.ts';
@@ -28,7 +31,61 @@ describe('config module', () => {
   describe('getConfigPath', () => {
     it('returns the correct file path inside userDataPath', () => {
       const p = getConfigPath('/some/path');
-      expect(p).toBe(path.join('/some/path', 'multiconta-config.json'));
+      expect(p).toBe(path.join('/some/path', 'pokegrid-config.json'));
+    });
+  });
+
+  describe('migrateLegacyConfig', () => {
+    it('returns the new filename as canonical and keeps the legacy name constant', () => {
+      expect(CONFIG_FILENAME).toBe('pokegrid-config.json');
+      expect(LEGACY_CONFIG_FILENAME).toBe('multiconta-config.json');
+    });
+
+    it('renames the legacy file when only it exists', () => {
+      const legacyPath = path.join(tmpDir, LEGACY_CONFIG_FILENAME);
+      fs.writeFileSync(legacyPath, JSON.stringify({ nextId: 1 }), 'utf-8');
+      expect(migrateLegacyConfig(tmpDir)).toBe(true);
+      expect(fs.existsSync(legacyPath)).toBe(false);
+      expect(fs.existsSync(getConfigPath(tmpDir))).toBe(true);
+    });
+
+    it('preserves config content through migration', () => {
+      const legacyPath = path.join(tmpDir, LEGACY_CONFIG_FILENAME);
+      const sample: Config = {
+        gameUrlDefault: DEFAULT_URL,
+        nextId: 2,
+        cols: 1,
+        rows: 1,
+        colFr: [1],
+        rowFr: [1],
+        panes: [{ id: 1, label: 'Conta 1', partition: 'persist:conta1', url: DEFAULT_URL }],
+      };
+      fs.writeFileSync(legacyPath, JSON.stringify(sample), 'utf-8');
+      migrateLegacyConfig(tmpDir);
+      expect(loadConfig(getConfigPath(tmpDir))).toEqual(sample);
+    });
+
+    it('does nothing when only the new file exists', () => {
+      fs.writeFileSync(getConfigPath(tmpDir), '{}', 'utf-8');
+      expect(migrateLegacyConfig(tmpDir)).toBe(false);
+      expect(fs.existsSync(path.join(tmpDir, LEGACY_CONFIG_FILENAME))).toBe(false);
+    });
+
+    it('prefers the new file when both exist and leaves the legacy untouched', () => {
+      fs.writeFileSync(
+        path.join(tmpDir, LEGACY_CONFIG_FILENAME),
+        JSON.stringify({ nextId: 99 }),
+        'utf-8'
+      );
+      fs.writeFileSync(getConfigPath(tmpDir), JSON.stringify({ nextId: 7 }), 'utf-8');
+      expect(migrateLegacyConfig(tmpDir)).toBe(false);
+      expect(loadConfig(getConfigPath(tmpDir))).toEqual({ nextId: 7 });
+      expect(fs.existsSync(path.join(tmpDir, LEGACY_CONFIG_FILENAME))).toBe(true);
+    });
+
+    it('does nothing when no config file exists', () => {
+      expect(migrateLegacyConfig(tmpDir)).toBe(false);
+      expect(fs.existsSync(getConfigPath(tmpDir))).toBe(false);
     });
   });
 
