@@ -1,63 +1,85 @@
-# PokeGrid v2
+<div align="center">
 
-[![CI](https://github.com/USER/REPO/actions/workflows/ci.yml/badge.svg)](https://github.com/USER/REPO/actions/workflows/ci.yml)
+<img src="build/icon.png" alt="PokeGrid" width="128"/>
 
-<!-- Substitua USER/REPO pelo seu owner/repo no GitHub após push do repositório -->
+# PokeGrid
 
-> [!CAUTION]
-> **AVISO CRÍTICO — NÃO EDITE ARQUIVOS `.js`**
-> Este projeto foi **100% migrado para TypeScript**. Os arquivos `.js` na raiz
-> (`main.js`, `preload.js`, `renderer.js`, `logger.js`) e em `src/*.js` são
-> **artefatos gerados pelo build** (`npm run build`). Toda edição deve ser feita
-> nos arquivos **`.ts` correspondentes** — qualquer alteração em `.js` será
-> **sobrescrita no próximo build** e **não entra no git** (`.gitignore`).
-> Veja [Desenvolvimento](#desenvolvimento) e `docs/MIGRACAO_TYPESCRIPT.md` para detalhes.
+**Várias contas. Uma janela. Zero dor de cabeça.**
 
-App de desktop (Electron) para jogar várias contas ao mesmo tempo, em uma
-única janela, cada quadrante com sessão de login independente.
+Gerenciador de desktop (Electron) para usar múltiplas contas simultaneamente
+em uma grade flexível — cada painel com sessão de login independente,
+divisórias arrastáveis e recuperação automática de travamentos.
 
-## Novidades desta versão
+[![Versão](https://img.shields.io/badge/vers%C3%A3o-2.1.0-2563eb)](package.json)
+[![Electron](https://img.shields.io/badge/Electron-31-47848F?logo=electron&logoColor=white)](https://www.electronjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-100%25-3178C6?logo=typescript&logoColor=white)](docs/MIGRACAO_TYPESCRIPT.md)
+[![Testes](https://img.shields.io/badge/testes-Vitest-6e9f18?logo=vitest&logoColor=white)](#qualidade)
+[![Plataformas](https://img.shields.io/badge/plataforma-Windows%20%7C%20Linux-0078d7?logo=windows95&logoColor=white)](#instala%C3%A7%C3%A3o)
 
-- **Tela inicial**: escolha quantas contas quer (1 a 9) e a URL do jogo.
-- **Divisórias arrastáveis**: passe o mouse na linha entre dois painéis e
-  arraste para redimensionar.
-- **Modo foco**: duplo clique no cabeçalho (ou botão ⛶) maximiza um painel
-  sem fechar as outras contas.
-- **Presets de layout**: menu `Layout…` na barra superior aplica arranjos
-  prontos em um clique — Igual, Colunas (tudo em uma linha), Linhas (tudo em
-  uma coluna) e "Focar conta N" (a conta escolhida fica ~2,5× maior que as
-  irmãs, sem esconder ninguém). Salve seus próprios layouts com `Salvar
-  layout`, reaplique-os pelo grupo "Meus presets" e exclua com o botão ×;
-  `Resetar layout` devolve o arranjo automático da grade. O redimensionamento
-  manual continua funcionando e prevalece até você escolher um preset.
-- **+ Conta / ×**: adicione contas a qualquer momento pelo botão no topo,
-  ou feche uma clicando no × do cabeçalho dela.
-- **Renomear**: clique no nome de cada conta (ex: "Conta 1") pra editar.
-- **Reordenar**: arraste a alça `⠿` no cabeçalho de uma conta para trocar
-  a posição dela na grade — a sessão não é recriada, só a ordem muda.
-- **Limpar dados de uma conta**: botão `⌫` no cabeçalho apaga cookies/login
-  daquela conta (recupera login travado) e recarrega só esse painel.
-- **Janela persistente**: posição, tamanho e estado maximizado da janela
-  voltam do jeito que você deixou da última vez.
-- **Pop-ups de login**: se o jogo/site abrir login em janela nova
-  (`window.open`, comum em OAuth), a janela extra é bloqueada e o login é
-  carregado dentro do próprio painel, mantendo a sessão da conta.
-- **Layout salvo automaticamente**: número de contas, nomes e tamanho dos
-  painéis voltam do jeito que você deixou da última vez.
-- **Recuperação automática**: se um painel travar ou perder conexão, ele
-  tenta reconectar sozinho (bolinha ao lado do nome fica amarela/vermelha
-  pra indicar o status). Se não conseguir depois de várias tentativas,
-  aparece um botão "Tentar novamente".
-- **Mais seguro**: janela agora roda com `sandbox: true` e uma política de
-  CSP restritiva. Cada conta roda em `BrowserView` isolada com partição
-  `persist:conta<N>`.
+</div>
 
-## Como rodar
+---
+
+## Índice
+
+- [Funcionalidades](#funcionalidades)
+- [Instalação](#instalação)
+- [Scripts disponíveis](#scripts-disponíveis)
+- [Estrutura do projeto](#estrutura-do-projeto)
+- [Arquitetura](#arquitetura)
+  - [Isolamento de sessão](#isolamento-de-sessão)
+  - [Recuperação de travamentos](#recuperação-de-travamentos)
+  - [Configuração persistida](#configuração-persistida)
+- [Desenvolvimento](#desenvolvimento)
+- [Qualidade](#qualidade)
+- [Limitações conhecidas](#limitações-conhecidas)
+
+## Funcionalidades
+
+### Grade e layout
+
+- **Tela inicial** — escolha quantas contas quer (1 a 9) e a URL do jogo.
+- **Divisórias arrastáveis** — passe o mouse na linha entre dois painéis e arraste para redimensionar.
+- **Presets de layout** — menu `Layout…` aplica arranjos prontos em um clique: Igual, Colunas (tudo em uma linha), Linhas (tudo em uma coluna) e "Focar conta N" (a conta escolhida fica ~2,5× maior que as irmãs, sem esconder ninguém). Salve seus próprios layouts com `Salvar layout`, reaplique-os pelo grupo "Meus presets" e exclua com o botão ×; `Resetar layout` devolve o arranjo automático da grade.
+- **Modo foco** — duplo clique no cabeçalho (ou botão ⛶) maximiza um painel sem fechar as outras contas.
+- **+ Conta / ×** — adicione contas a qualquer momento pelo botão no topo, ou feche uma clicando no × do cabeçalho dela.
+- **Reordenar** — arraste a alça `⠿` no cabeçalho de uma conta para trocar a posição dela na grade; a sessão não é recriada, só a ordem muda.
+- **Renomear** — clique no nome de cada conta (ex.: "Conta 1") para editar.
+- **Layout salvo automaticamente** — número de contas, nomes, tamanho dos painéis e geometria da janela voltam do jeito que você deixou da última vez.
+
+### Sessões e segurança
+
+- **Isolamento total entre contas** — cada painel roda em partição própria (`persist:conta<N>`); cookies, localStorage e cache nunca vazam de uma conta para outra.
+- **Pop-ups de login** — se o jogo/site abrir login em janela nova (`window.open`, comum em OAuth), a janela extra é bloqueada e o login é carregado dentro do próprio painel, mantendo a sessão da conta.
+- **Limpar dados de uma conta** — botão `⌫` no cabeçalho apaga cookies/login daquela conta (recupera login travado) e recarrega só esse painel.
+- **Mais seguro** — janela roda com `sandbox: true`, política de CSP restritiva e cada conta em `BrowserView` isolada.
+
+### Resiliência
+
+- **Recuperação automática** — se um painel travar ou perder conexão, ele tenta reconectar sozinho (a bolinha ao lado do nome fica amarela/vermelha indicando o status). Após várias tentativas sem sucesso, aparece um botão "Tentar novamente".
+
+## Instalação
+
+**Pré-requisitos:** [Node.js](https://nodejs.org/) 18+
 
 ```bash
+# clonar o repositório
+git clone https://github.com/thiothiagus/pokegrid.git
+cd pokegrid
+
+# instalar dependências
 npm install
+
+# compilar TypeScript e abrir o app
 npm run start
 ```
+
+Para gerar um instalador:
+
+| Comando        | Saída                            |
+| -------------- | -------------------------------- |
+| `npm run dist` | Windows → instalador NSIS (.exe) |
+|                | Linux → AppImage                 |
 
 ## Scripts disponíveis
 
@@ -69,12 +91,12 @@ npm run start
 | `npm run test`      | Roda testes com Vitest                                                                    |
 | `npm run lint`      | ESLint + Prettier                                                                         |
 | `npm run format`    | Formata código com Prettier                                                               |
-| `npm run dist`      | Gera instalador Windows (electron-builder)                                                |
+| `npm run dist`      | Gera instalador Windows/Linux (electron-builder)                                          |
 
 ## Estrutura do projeto
 
 ```
-pokegrid/                 # Raiz do projeto (C:\Apps\pokegrid)
+pokegrid/
 ├── main.ts               # Processo principal (cria janela, gerencia BrowserViews)
 ├── preload.ts            # Ponte IPC segura (contextBridge)
 ├── renderer.ts           # UI do grid (setup, render, eventos)
@@ -93,98 +115,84 @@ pokegrid/                 # Raiz do projeto (C:\Apps\pokegrid)
 │   ├── retry.ts                # Lógica de retry com backoff exponencial
 │   └── types.ts                # Interfaces TypeScript compartilhadas
 ├── tests/                      # Testes automatizados (Vitest)
-│   ├── config.test.ts
-│   ├── grid-layout.test.ts
-│   ├── layout-presets.test.ts
-│   ├── retry.test.ts
-│   └── win-state.test.ts
 ├── tsconfig.json               # Main process (CommonJS)
 ├── tsconfig.renderer.json      # Renderer (ES modules)
-├── package.json
 └── .eslintrc.cjs               # Config ESLint (CommonJS)
 ```
 
-## Arquitetura rápida
+> [!NOTE]
+> Os arquivos `.js` listados acima não existem no repositório — são gerados pelo
+> build. Veja [Desenvolvimento](#desenvolvimento).
 
-- **Main process** (`main.ts`): cria `BrowserWindow`, gerencia `BrowserView`s
-  (uma por conta), posiciona via `setBounds`, lida com IPC.
-- **Preload** (`preload.ts`): expõe `window.api` com métodos tipados
-  (`createPane`, `removePane`, `syncLayout`, `onPaneStatus`, etc.).
-- **Renderer** (`renderer.ts`): monta a grade CSS Grid, cria elementos
-  de painel (header + área reservada), escuta redimensionamento
-  das divisórias (`mousedown`/`mousemove`/`mouseup`), sincroniza layout
-  com main process via `window.api.syncLayout()`.
+## Arquitetura
 
-## Isolamento de sessão
+- **Main process** (`main.ts`): cria `BrowserWindow`, gerencia `BrowserView`s (uma por conta), posiciona via `setBounds`, lida com IPC.
+- **Preload** (`preload.ts`): expõe `window.api` com métodos tipados (`createPane`, `removePane`, `syncLayout`, `onPaneStatus`, etc.).
+- **Renderer** (`renderer.ts`): monta a grade CSS Grid, cria elementos de painel (header + área reservada), escuta redimensionamento das divisórias (`mousedown`/`mousemove`/`mouseup`) e sincroniza o layout com a main process via `window.api.syncLayout()`.
 
-Cada conta usa partição `persist:conta<N>` — cookies, localStorage,
-cache e sessionStorage ficam **completamente separados** entre painéis.
-Não há vazamento de sessão entre contas.
+### Isolamento de sessão
 
-## Recuperação de travamentos
+Cada conta usa partição `persist:conta<N>` — cookies, localStorage, cache e sessionStorage ficam **completamente separados** entre painéis. Não há vazamento de sessão entre contas.
 
-- Heartbeat a cada 30s via `webContents.on('render-process-gone')` e
-  `webContents.on('unresponsive')`.
-- Se painel travar: status fica vermelho, overlay "O painel travou...
-  Reiniciando...", recria `BrowserView` na mesma partição (mantém login).
-- Se perder conexão: status amarelo, overlay "Tentando reconectar em Xs...",
-  recarrega a URL do painel.
-- Após 5 falhas: status vermelho final, botão "Tentar novamente" manual.
+### Recuperação de travamentos
 
-## Configuração persistida
+- Heartbeat a cada 30s via `webContents.on('render-process-gone')` e `webContents.on('unresponsive')`.
+- Painel travou → status vermelho, overlay "O painel travou… Reiniciando…" e recriação da `BrowserView` na mesma partição (mantém o login).
+- Perdeu conexão → status amarelo, overlay "Tentando reconectar em Xs…" e recarga da URL do painel.
+- Após 5 falhas → status vermelho final e botão manual "Tentar novamente".
+
+### Configuração persistida
 
 Arquivo: `%APPDATA%/pokegrid/pokegrid-config.json`
 
-Na primeira execução após a renomeação do projeto, o arquivo legado
-`multiconta-config.json` é renomeado automaticamente para o novo nome.
+Na primeira execução após a renomeação do projeto, o arquivo legado `multiconta-config.json` é renomeado automaticamente para o novo nome.
 
 Contém:
 
-- `gameUrlDefault`: URL padrão para novas contas
-- `nextId`: próximo ID sequencial
-- `cols`, `rows`: grade atual
-- `colFr`, `rowFr`: frações CSS Grid (1fr = tamanho igual)
-- `panes[]`: array de `{id, label, partition, url}`
-- `customPresets[]`: presets personalizados de layout salvos pelo usuário,
-  array de `{name, cols, rows, colFr, rowFr}`
+- `gameUrlDefault` — URL padrão para novas contas
+- `nextId` — próximo ID sequencial
+- `cols`, `rows` — grade atual
+- `colFr`, `rowFr` — frações CSS Grid (`1fr` = tamanho igual)
+- `panes[]` — array de `{id, label, partition, url}`
+- `customPresets[]` — presets personalizados salvos pelo usuário, array de `{name, cols, rows, colFr, rowFr}`
 
 ## Desenvolvimento
 
-### ⚠️ Fonte vs. Artefato — regra de ouro
+### Fonte vs. artefato — regra de ouro
 
-| O que editar                                                        | Onde está | Versionado? | O que NÃO editar                                    |
-| ------------------------------------------------------------------- | --------- | ----------- | --------------------------------------------------- |
-| `main.ts`, `preload.ts`, `renderer.ts`, `logger.ts`                 | raiz      | ✅ sim       | `main.js`, `preload.js`, `renderer.js`, `logger.js` |
-| `src/*.ts` (`config.ts`, `grid-layout.ts`, `pane-manager.ts`, etc.) | `src/`    | ✅ sim       | `src/*.js`                                          |
+> [!CAUTION]
+> Este projeto é **100% TypeScript**. Os arquivos `.js` na raiz (`main.js`,
+> `preload.js`, `renderer.js`, `logger.js`) e em `src/*.js` são **artefatos
+> gerados pelo build** (`npm run build`). Toda edição deve ser feita nos
+> arquivos **`.ts` correspondentes** — qualquer alteração em `.js` será
+> **sobrescrita no próximo build** e **não entra no git** (`.gitignore`).
 
-- **Sempre edite `.ts`.** O comando `npm run build` compila todos os `.ts` para `.js`.
+| Edite isto                                                          | Onde   | Versionado? | Nunca edite isto                                    |
+| ------------------------------------------------------------------- | ------ | ----------- | --------------------------------------------------- |
+| `main.ts`, `preload.ts`, `renderer.ts`, `logger.ts`                 | raiz   | Sim         | `main.js`, `preload.js`, `renderer.js`, `logger.js` |
+| `src/*.ts` (`config.ts`, `grid-layout.ts`, `pane-manager.ts`, etc.) | `src/` | Sim         | `src/*.js`                                          |
 
-- **Nunca edite `.js` diretamente.** O caso real que motivou este aviso: um bug de layout em `renderer.ts:413-416` foi corrigido por engano em `renderer.js` — a correção sumiu no build seguinte porque `renderer.js` é regenerado a partir de `renderer.ts`.
+Detalhes do fluxo:
 
-- **Como saber se errou o arquivo?** Se `git status` não mostra o arquivo após `git add`, ele está no `.gitignore` (linhas 18-23) e é artefato.
-
-- Código-fonte em **TypeScript** (`.ts`) — 100% dos arquivos de aplicação
-
-- Build gera `.js` na raiz e em `src/` (artefatos, não versionados, ignorados pelo git)
-
+- `npm run build` compila todos os `.ts` para `.js`.
 - Dois `tsconfig`:
-
   - `tsconfig.json` → `module: CommonJS` (main process: `main.ts`, `preload.ts`, `logger.ts`, `src/*.ts`)
   - `tsconfig.renderer.json` → `module: ESNext` + `moduleResolution: bundler` (renderer: `renderer.ts` → ES module carregado via `<script type="module">` em `index.html`)
-
+- **Como saber se errou o arquivo?** Se `git status` não mostra o arquivo após `git add`, ele está no `.gitignore` e é artefato.
 - Documentação completa da migração: [`docs/MIGRACAO_TYPESCRIPT.md`](docs/MIGRACAO_TYPESCRIPT.md)
 
 ## Qualidade
 
-- `npm run typecheck` — `tsc --noEmit` nos dois tsconfig
-- `npm run test` — Vitest (45 testes cobrindo config, grid-layout, layout-presets, retry, win-state)
-- `npm run lint` — ESLint + Prettier (regras TypeScript recomendadas)
-- `npm run format:check` — Prettier check
-- `riteward check` — executa todos os quality gates acima
+```bash
+npm run typecheck    # tsc --noEmit nos dois tsconfig
+npm run test         # Vitest (45 testes: config, grid-layout, layout-presets, retry, win-state)
+npm run lint         # ESLint + Prettier (regras TypeScript recomendadas)
+npm run format:check # Prettier check
+riteward check       # executa todos os quality gates acima
+```
 
 ## Limitações conhecidas
 
-- Janelas pop-up (`window.open`) são bloqueadas e carregadas no painel.
-  Alguns fluxos OAuth complexos podem não funcionar.
+- Janelas pop-up (`window.open`) são bloqueadas e carregadas no painel; alguns fluxos OAuth complexos podem não funcionar.
 - Não há suporte a múltiplos monitores (janela única).
 - Backup/restore de configuração foi removido (funcionalidade problemática).
