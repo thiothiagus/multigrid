@@ -9,10 +9,10 @@ resposta.md
 *.bak
 
 # Configurações TypeScript (exceto as padrões)
+tsconfig.*.json
 !tsconfig.json
 !tsconfig.renderer.json
 !tsconfig.base.json
-tsconfig.*.json
 
 # Build / dist
 dist/
