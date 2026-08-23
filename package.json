@@ -1,5 +1,5 @@
 {
-  "name": "multi-conta-grid",
+  "name": "pokegrid",
   "version": "2.1.0",
   "description": "Grade flexivel de contas em uma unica janela, com sessoes isoladas, divisorias arrastaveis e recuperacao automatica de travamentos",
   "main": "main.js",
@@ -35,8 +35,8 @@
     "vitest": "^4.1.11"
   },
   "build": {
-    "appId": "com.usuario.multicontagrid",
-    "productName": "Multi-Conta Grid",
+    "appId": "com.usuario.pokegrid",
+    "productName": "PokeGrid",
     "directories": {
       "output": "dist"
     },

@@ -1,4 +1,4 @@
-# Multi-Conta Grid v2
+# PokeGrid v2
 
 [![CI](https://github.com/USER/REPO/actions/workflows/ci.yml/badge.svg)](https://github.com/USER/REPO/actions/workflows/ci.yml)
 <!-- Substitua USER/REPO pelo seu owner/repo no GitHub após push do repositório -->
@@ -73,36 +73,34 @@ npm run start
 ## Estrutura do projeto
 
 ```
-multiconta-grid-v3/
-├── multiconta/           # App Electron (este diretório)
-│   ├── main.ts           # Processo principal (cria janela, gerencia BrowserViews)
-│   ├── preload.ts        # Ponte IPC segura (contextBridge)
-│   ├── renderer.ts       # UI do grid (setup, render, eventos)
-│   ├── logger.ts         # Logger JSONL em logs/errors.jsonl
-│   ├── index.html        # Shell da UI (toolbar, setup-screen, grid-container)
-│   ├── style.css         # Estilos (grid, painéis, divisórias, overlays)
-│   ├── src/
-│   │   ├── config.ts           # Caminhos de arquivo, DEFAULT_URL
-│   │   ├── config-state.ts     # Estado padrão, normalização, computeGridDims
-│   │   ├── grid-layout.ts      # Cálculo de layout CSS Grid, frações, resizers
-│   │   ├── layout-presets.ts   # Presets de layout (Igual, Colunas, Linhas, Focar, personalizados)
-│   │   ├── pane-manager.ts     # Criação/remoção/atualização de BrowserViews
-│   │   ├── pane-ui.ts          # Atualização de status (bolinha, overlay)
-│   │   ├── focus-manager.ts    # Estado de foco (modo foco painel)
-│   │   ├── win-state.ts        # Persistência de geometria da janela
-│   │   ├── retry.ts            # Lógica de retry com backoff exponencial
-│   │   └── types.ts            # Interfaces TypeScript compartilhadas
-│   ├── tests/           # Testes automatizados (Vitest)
-│   │   ├── config.test.ts
-│   │   ├── grid-layout.test.ts
-│   │   ├── layout-presets.test.ts
-│   │   ├── retry.test.ts
-│   │   └── win-state.test.ts
-│   ├── tsconfig.json          # Main process (CommonJS)
-│   ├── tsconfig.renderer.json # Renderer (ES modules)
-│   ├── package.json
-│   └── .eslintrc.cjs          # Config ESLint (CommonJS)
-└── ... (outros arquivos de config)
+pokegrid/                 # Raiz do projeto (C:\Apps\pokegrid)
+├── main.ts               # Processo principal (cria janela, gerencia BrowserViews)
+├── preload.ts            # Ponte IPC segura (contextBridge)
+├── renderer.ts           # UI do grid (setup, render, eventos)
+├── logger.ts             # Logger JSONL em logs/errors.jsonl
+├── index.html            # Shell da UI (toolbar, setup-screen, grid-container)
+├── style.css             # Estilos (grid, painéis, divisórias, overlays)
+├── src/
+│   ├── config.ts               # Caminhos de arquivo, DEFAULT_URL
+│   ├── config-state.ts         # Estado padrão, normalização, computeGridDims
+│   ├── grid-layout.ts          # Cálculo de layout CSS Grid, frações, resizers
+│   ├── layout-presets.ts       # Presets de layout (Igual, Colunas, Linhas, Focar, personalizados)
+│   ├── pane-manager.ts         # Criação/remoção/atualização de BrowserViews
+│   ├── pane-ui.ts              # Atualização de status (bolinha, overlay)
+│   ├── focus-manager.ts        # Estado de foco (modo foco painel)
+│   ├── win-state.ts            # Persistência de geometria da janela
+│   ├── retry.ts                # Lógica de retry com backoff exponencial
+│   └── types.ts                # Interfaces TypeScript compartilhadas
+├── tests/                      # Testes automatizados (Vitest)
+│   ├── config.test.ts
+│   ├── grid-layout.test.ts
+│   ├── layout-presets.test.ts
+│   ├── retry.test.ts
+│   └── win-state.test.ts
+├── tsconfig.json               # Main process (CommonJS)
+├── tsconfig.renderer.json      # Renderer (ES modules)
+├── package.json
+└── .eslintrc.cjs               # Config ESLint (CommonJS)
 ```
 
 ## Arquitetura rápida
@@ -134,7 +132,7 @@ Não há vazamento de sessão entre contas.
 
 ## Configuração persistida
 
-Arquivo: `%APPDATA%/Multi-Conta Grid/config.json`
+Arquivo: `%APPDATA%/pokegrid/multiconta-config.json`
 
 Contém:
 - `gameUrlDefault`: URL padrão para novas contas

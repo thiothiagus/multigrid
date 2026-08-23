@@ -47,7 +47,7 @@ function createWindow(): void {
   const winOpts: Partial<import('electron').BrowserWindowConstructorOptions> = {
     width: bounds.width,
     height: bounds.height,
-    title: 'Multi-Conta Grid',
+    title: 'PokeGrid',
     icon: path.join(__dirname, 'build', 'icon.png'),
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),

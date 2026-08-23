@@ -2,7 +2,7 @@
 
 ## Contexto do Projeto
 
-**Multi-Conta Grid** é um aplicativo Electron para gerenciar múltiplas sessões/contas simultâneas em uma grade flexível dentro de uma única janela, com sessões isoladas (`persist:session_<id>`), divisórias arrastáveis e recuperação automática de travamentos.
+**PokeGrid** é um aplicativo Electron para gerenciar múltiplas sessões/contas simultâneas em uma grade flexível dentro de uma única janela, com sessões isoladas (`persist:session_<id>`), divisórias arrastáveis e recuperação automática de travamentos.
 
 - **Stack**: Electron, Node.js, JavaScript, HTML/CSS.
 - **Componentes**: `main.js` (processo principal e gerenciamento de WebContentsView), `renderer.js` (interface e controle do grid), `preload.js` (ponte IPC segura), `logger.js` (logs do sistema em `logs/errors.jsonl`), `src/` (módulos e utilitários).
