@@ -10,7 +10,9 @@ Gerenciador de desktop (Electron) para usar múltiplas contas simultaneamente
 em uma grade flexível — cada painel com sessão de login independente,
 divisórias arrastáveis e recuperação automática de travamentos.
 
-[![Versão](https://img.shields.io/badge/vers%C3%A3o-2.1.0-2563eb)](package.json)
+[![CI](https://github.com/thiothiagus/pokegrid/actions/workflows/ci.yml/badge.svg)](https://github.com/thiothiagus/pokegrid/actions/workflows/ci.yml)
+[![Release](https://github.com/thiothiagus/pokegrid/actions/workflows/release.yml/badge.svg)](https://github.com/thiothiagus/pokegrid/actions/workflows/release.yml)
+[![Versão](https://img.shields.io/badge/vers%C3%A3o-0.1.0-2563eb)](package.json)
 [![Electron](https://img.shields.io/badge/Electron-31-47848F?logo=electron&logoColor=white)](https://www.electronjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-100%25-3178C6?logo=typescript&logoColor=white)](docs/MIGRACAO_TYPESCRIPT.md)
 [![Testes](https://img.shields.io/badge/testes-Vitest-6e9f18?logo=vitest&logoColor=white)](#qualidade)
@@ -60,7 +62,10 @@ divisórias arrastáveis e recuperação automática de travamentos.
 
 ## Instalação
 
-**Pré-requisitos:** [Node.js](https://nodejs.org/) 18+
+**Só quer usar?** Baixe o instalador mais recente na aba
+[Releases](https://github.com/thiothiagus/pokegrid/releases) — não precisa de Node.js.
+
+**Pré-requisitos (build local):** [Node.js](https://nodejs.org/) 18+
 
 ```bash
 # clonar o repositório

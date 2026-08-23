@@ -1,6 +1,6 @@
 {
   "name": "pokegrid",
-  "version": "2.1.0",
+  "version": "0.1.0",
   "description": "Grade flexivel de contas em uma unica janela, com sessoes isoladas, divisorias arrastaveis e recuperacao automatica de travamentos",
   "main": "main.js",
   "scripts": {
@@ -62,6 +62,11 @@
     "linux": {
       "target": "AppImage",
       "icon": "build/icon.png"
+    },
+    "publish": {
+      "provider": "github",
+      "owner": "thiothiagus",
+      "repo": "pokegrid"
     }
   },
   "allowScripts": {
