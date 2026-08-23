@@ -47,5 +47,6 @@ logs/
 coverage/
 
 # Configuração local do usuário (salva em %APPDATA%)
+pokegrid-config.json
 multiconta-config.json
 window-state.json

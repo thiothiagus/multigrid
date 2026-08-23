@@ -10,8 +10,27 @@ const THEME_VALUES: readonly string[] = ['light', 'dark', 'system'];
 
 export const DEFAULT_URL = 'https://poke.idleworld.online/play';
 
+export const CONFIG_FILENAME = 'pokegrid-config.json';
+export const LEGACY_CONFIG_FILENAME = 'multiconta-config.json';
+
 export function getConfigPath(userDataPath: string): string {
-  return path.join(userDataPath, 'multiconta-config.json');
+  return path.join(userDataPath, CONFIG_FILENAME);
+}
+
+export function migrateLegacyConfig(userDataPath: string, logger?: Logger): boolean {
+  try {
+    const newPath = getConfigPath(userDataPath);
+    if (fs.existsSync(newPath)) return false;
+    const legacyPath = path.join(userDataPath, LEGACY_CONFIG_FILENAME);
+    if (!fs.existsSync(legacyPath)) return false;
+    fs.renameSync(legacyPath, newPath);
+    return true;
+  } catch (e: unknown) {
+    const err = e as Error;
+    if (logger)
+      logger.error('io', 'Falha ao migrar arquivo de configuracao legado', { error: err.message });
+    return false;
+  }
 }
 
 export function loadConfig(configPath: string): Config | null {
@@ -78,7 +97,10 @@ export function normalizeState(saved: Partial<Config>): Config {
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     DEFAULT_URL,
+    CONFIG_FILENAME,
+    LEGACY_CONFIG_FILENAME,
     getConfigPath,
+    migrateLegacyConfig,
     loadConfig,
     saveConfig,
     computeGridDims,

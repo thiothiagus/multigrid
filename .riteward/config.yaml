@@ -1,6 +1,6 @@
 version: "1"
 project:
-  name: "multi-conta-grid"
+  name: "pokegrid"
   language: "node"
   packageManager: "npm"
   scripts:
