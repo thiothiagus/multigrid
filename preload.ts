@@ -24,4 +24,6 @@ contextBridge.exposeInMainWorld('api', {
   onUpdateStatus: (callback: (data: UpdateStatusPayload) => void) => {
     ipcRenderer.on('update-status', (_event, data) => callback(data));
   },
+
+  getAppVersion: () => ipcRenderer.invoke('app-version'),
 });
