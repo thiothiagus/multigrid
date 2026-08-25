@@ -21,6 +21,7 @@ import {
   clearAllPanes,
 } from './src/pane-manager';
 import type { PaneEntry } from './src/types';
+import { initUpdater, checkForUpdates, downloadUpdate, installUpdate } from './src/updater';
 
 let win: BrowserWindow | null = null;
 const panes = new Map<number, PaneEntry>();
@@ -191,10 +192,15 @@ ipcMain.handle('import-config', async () => {
 app.whenReady().then(() => {
   migrateLegacyConfig(app.getPath('userData'), logger);
   createWindow();
+  initUpdater({ getWin: () => win, logger });
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
   });
 });
+
+ipcMain.handle('updates-check', () => checkForUpdates(logger));
+ipcMain.handle('updates-download', () => downloadUpdate(logger));
+ipcMain.handle('updates-install', () => installUpdate(logger));
 
 app.on('before-quit', () => {
   clearAllPanes(panes);

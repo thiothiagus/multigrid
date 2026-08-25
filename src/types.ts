@@ -1,6 +1,20 @@
 import { BrowserView } from 'electron';
 import type { ThemePreference } from './theme';
 
+// Tipos de update vivem aqui (modulo compartilhado entre main/renderer).
+// Se ficassem em src/update-status.ts, o arquivo entraria no programa do
+// renderer (via types) e seria reemitido como ESM, sobrescrevendo a saida
+// CommonJS usada pelo processo principal.
+export type UpdateStatus =
+  'checking' | 'available' | 'not-available' | 'downloading' | 'downloaded' | 'error';
+
+export interface UpdateStatusPayload {
+  status: UpdateStatus;
+  version?: string;
+  progress?: number;
+  message?: string;
+}
+
 export interface Pane {
   id: number;
   label: string;
@@ -78,6 +92,11 @@ export interface WindowApi {
   importConfig: () => Promise<Config | null>;
   syncLayout: (layout: LayoutItem[]) => void;
   onPaneStatus: (callback: (data: PaneStatusPayload) => void) => void;
+
+  checkUpdates: () => Promise<boolean>;
+  downloadUpdate: () => Promise<boolean>;
+  installUpdate: () => Promise<boolean>;
+  onUpdateStatus: (callback: (data: UpdateStatusPayload) => void) => void;
 }
 
 declare global {

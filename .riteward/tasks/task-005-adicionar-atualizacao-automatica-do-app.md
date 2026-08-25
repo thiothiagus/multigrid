@@ -1,7 +1,7 @@
 ---
 id: task-005
 title: Adicionar atualização automática do app
-status: todo
+status: done
 priority: low
 created_at: 2026-08-15
 ---
