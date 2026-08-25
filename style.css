@@ -60,6 +60,10 @@ html, body {
 
 #toolbar-title { font-weight: 600; letter-spacing: 0.3px; }
 
+#toolbar-left { display: flex; align-items: center; gap: 6px; min-width: 0; }
+
+#toolbar-version { color: var(--text-dim); font-size: 11px; white-space: nowrap; }
+
 #toolbar button {
   background: transparent;
   border: 1px solid var(--border-strong);

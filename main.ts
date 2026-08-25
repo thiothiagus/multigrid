@@ -202,6 +202,8 @@ ipcMain.handle('updates-check', () => checkForUpdates(logger));
 ipcMain.handle('updates-download', () => downloadUpdate(logger));
 ipcMain.handle('updates-install', () => installUpdate(logger));
 
+ipcMain.handle('app-version', () => app.getVersion());
+
 app.on('before-quit', () => {
   clearAllPanes(panes);
 });

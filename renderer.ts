@@ -724,6 +724,18 @@ window.api.onUpdateStatus(data => {
 });
 
 // ---------------------------------------------------------------------
+// Versao atual (toolbar) -- vem do processo main (app.getVersion())
+// ---------------------------------------------------------------------
+
+window.api
+  .getAppVersion()
+  .then(version => {
+    const el = document.getElementById('toolbar-version');
+    if (el) el.textContent = 'v' + version;
+  })
+  .catch(() => {});
+
+// ---------------------------------------------------------------------
 // Inicializacao
 // ---------------------------------------------------------------------
 

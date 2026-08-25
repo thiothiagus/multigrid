@@ -97,6 +97,8 @@ export interface WindowApi {
   downloadUpdate: () => Promise<boolean>;
   installUpdate: () => Promise<boolean>;
   onUpdateStatus: (callback: (data: UpdateStatusPayload) => void) => void;
+
+  getAppVersion: () => Promise<string>;
 }
 
 declare global {
