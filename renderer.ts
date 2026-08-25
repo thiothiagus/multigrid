@@ -651,6 +651,79 @@ window.api
   .catch(() => {});
 
 // ---------------------------------------------------------------------
+// Auto-update (banner discreto na toolbar; eventos vem do processo main)
+// ---------------------------------------------------------------------
+
+let updateDownloaded = false;
+let pendingVersion: string | null = null;
+
+const updateBox = document.createElement('div');
+updateBox.id = 'update-box';
+updateBox.classList.add('hidden');
+document.getElementById('toolbar-actions')!.appendChild(updateBox);
+
+const updateMsg = document.createElement('span');
+updateMsg.className = 'update-msg';
+updateBox.appendChild(updateMsg);
+
+const updateBtn = document.createElement('button');
+updateBtn.classList.add('hidden');
+updateBox.appendChild(updateBtn);
+
+function showUpdateBanner(message: string, btnLabel: string | null, onClick?: () => void) {
+  updateMsg.textContent = message;
+  if (btnLabel) {
+    updateBtn.textContent = btnLabel;
+    updateBtn.onclick = onClick ?? null;
+    updateBtn.classList.remove('hidden');
+  } else {
+    updateBtn.onclick = null;
+    updateBtn.classList.add('hidden');
+  }
+  updateBox.classList.remove('hidden');
+}
+
+function hideUpdateBanner() {
+  updateBox.classList.add('hidden');
+}
+
+window.api.onUpdateStatus(data => {
+  switch (data.status) {
+    case 'available': {
+      pendingVersion = data.version ?? null;
+      const v = data.version ? ` ${data.version}` : '';
+      showUpdateBanner(`Nova versão${v} disponível`, 'Baixar', () => {
+        window.api.downloadUpdate();
+      });
+      break;
+    }
+    case 'downloading':
+      showUpdateBanner(`Baixando atualização… ${data.progress ?? 0}%`, null);
+      break;
+    case 'downloaded':
+      updateDownloaded = true;
+      showUpdateBanner(`Versão ${data.version ?? 'nova'} pronta`, 'Reiniciar e atualizar', () => {
+        window.api.installUpdate();
+      });
+      break;
+    case 'error':
+      // Falha de rede no download: oferece nova tentativa em vez de sumir
+      if (!updateDownloaded && pendingVersion) {
+        showUpdateBanner(`Falha ao baixar versão ${pendingVersion}`, 'Tentar novamente', () => {
+          window.api.downloadUpdate();
+        });
+        break;
+      }
+      hideUpdateBanner();
+      break;
+    default:
+      // checking / not-available: sem novidade visivel na UI
+      if (!updateDownloaded) hideUpdateBanner();
+      break;
+  }
+});
+
+// ---------------------------------------------------------------------
 // Inicializacao
 // ---------------------------------------------------------------------
 

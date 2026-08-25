@@ -14,6 +14,8 @@
     "src/config.ts",
     "src/win-state.ts",
     "src/retry.ts",
-    "src/pane-manager.ts"
+    "src/pane-manager.ts",
+    "src/update-status.ts",
+    "src/updater.ts"
   ]
 }

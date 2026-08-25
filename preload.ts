@@ -1,5 +1,5 @@
 import { contextBridge, ipcRenderer } from 'electron';
-import type { Config, Pane, LayoutItem, PaneStatusPayload } from './src/types';
+import type { Config, Pane, LayoutItem, PaneStatusPayload, UpdateStatusPayload } from './src/types';
 
 contextBridge.exposeInMainWorld('api', {
   loadConfig: () => ipcRenderer.invoke('load-config'),
@@ -16,5 +16,12 @@ contextBridge.exposeInMainWorld('api', {
 
   onPaneStatus: (callback: (data: PaneStatusPayload) => void) => {
     ipcRenderer.on('pane-status', (_event, data) => callback(data));
+  },
+
+  checkUpdates: () => ipcRenderer.invoke('updates-check'),
+  downloadUpdate: () => ipcRenderer.invoke('updates-download'),
+  installUpdate: () => ipcRenderer.invoke('updates-install'),
+  onUpdateStatus: (callback: (data: UpdateStatusPayload) => void) => {
+    ipcRenderer.on('update-status', (_event, data) => callback(data));
   },
 });
