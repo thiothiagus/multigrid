@@ -99,6 +99,16 @@ export interface WindowApi {
   onUpdateStatus: (callback: (data: UpdateStatusPayload) => void) => void;
 
   getAppVersion: () => Promise<string>;
+
+  logRendererError: (data: {
+    message: string;
+    stack?: string;
+    source?: string;
+    lineno?: number;
+    colno?: number;
+    reason?: string;
+    url?: string;
+  }) => void;
 }
 
 declare global {

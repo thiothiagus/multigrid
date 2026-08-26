@@ -3,6 +3,7 @@ import path from 'path';
 
 let logDir: string | null = null;
 let logFile: string | null = null;
+let initialized = false;
 
 export function init(userDataPath: string, isPackaged: boolean = false): void {
   logDir = isPackaged ? path.join(userDataPath, 'logs') : path.join(__dirname, 'logs');
@@ -13,6 +14,9 @@ export function init(userDataPath: string, isPackaged: boolean = false): void {
     // ignorar falha ao criar diretorio de log
   }
 
+  if (initialized) return;
+  initialized = true;
+
   process.on('uncaughtException', (err: Error) => {
     error('uncaughtException', err.message, { stack: err.stack });
   });
@@ -20,6 +24,12 @@ export function init(userDataPath: string, isPackaged: boolean = false): void {
   process.on('unhandledRejection', (reason: unknown) => {
     error('unhandledRejection', String(reason));
   });
+}
+
+export function __resetForTests(): void {
+  logDir = null;
+  logFile = null;
+  initialized = false;
 }
 
 export function write(
@@ -59,4 +69,4 @@ export function getLogPath(): string | null {
   return logFile;
 }
 
-module.exports = { init, error, warn, info, getLogPath };
+module.exports = { init, error, warn, info, getLogPath, __resetForTests };

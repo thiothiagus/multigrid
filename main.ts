@@ -190,6 +190,7 @@ ipcMain.handle('import-config', async () => {
 });
 
 app.whenReady().then(() => {
+  logger.init(app.getPath('userData'), app.isPackaged);
   migrateLegacyConfig(app.getPath('userData'), logger);
   createWindow();
   initUpdater({ getWin: () => win, logger });
@@ -203,6 +204,28 @@ ipcMain.handle('updates-download', () => downloadUpdate(logger));
 ipcMain.handle('updates-install', () => installUpdate(logger));
 
 ipcMain.handle('app-version', () => app.getVersion());
+
+ipcMain.on('renderer-error', (_event, data: unknown) => {
+  try {
+    const d = data as Record<string, unknown>;
+    const message =
+      typeof d?.message === 'string' ? String(d.message).slice(0, 2000) : 'renderer error';
+    const stack = typeof d?.stack === 'string' ? String(d.stack).slice(0, 4000) : undefined;
+    const source = typeof d?.source === 'string' ? String(d.source).slice(0, 500) : undefined;
+    const reason = typeof d?.reason === 'string' ? String(d.reason).slice(0, 2000) : undefined;
+    const url = typeof d?.url === 'string' ? String(d.url).slice(0, 500) : undefined;
+    logger.error('renderer', message, {
+      stack,
+      source,
+      reason,
+      url,
+      lineno: d?.lineno,
+      colno: d?.colno,
+    });
+  } catch {
+    // ignorar payload malformado
+  }
+});
 
 app.on('before-quit', () => {
   clearAllPanes(panes);

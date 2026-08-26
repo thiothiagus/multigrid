@@ -26,4 +26,14 @@ contextBridge.exposeInMainWorld('api', {
   },
 
   getAppVersion: () => ipcRenderer.invoke('app-version'),
+
+  logRendererError: (data: {
+    message: string;
+    stack?: string;
+    source?: string;
+    lineno?: number;
+    colno?: number;
+    reason?: string;
+    url?: string;
+  }) => ipcRenderer.send('renderer-error', data),
 });

@@ -27,6 +27,52 @@ import {
 } from './src/layout-presets.js';
 import type { Config, LayoutPreset } from './src/types.js';
 
+// Captura erros do renderer e encaminha ao main para gravacao em logs/errors.jsonl
+function reportRendererError(data: {
+  message: string;
+  stack?: string;
+  source?: string;
+  lineno?: number;
+  colno?: number;
+  reason?: string;
+  url?: string;
+}): void {
+  try {
+    window.api?.logRendererError?.(data);
+  } catch {
+    // ignorar falha ao enviar erro
+  }
+}
+
+window.onerror = function (
+  message: string | Event,
+  source?: string,
+  lineno?: number,
+  colno?: number,
+  error?: Error
+): boolean {
+  reportRendererError({
+    message: String(message),
+    source: source ? String(source) : undefined,
+    lineno,
+    colno,
+    stack: error?.stack,
+    url: typeof location !== 'undefined' ? location.href : undefined,
+  });
+  return false;
+};
+
+window.addEventListener('unhandledrejection', (event: PromiseRejectionEvent) => {
+  const reason: unknown = (event as unknown as { reason: unknown }).reason;
+  const err = reason as Error | null;
+  reportRendererError({
+    message: String((err as Error)?.message ?? reason),
+    stack: (err as Error)?.stack,
+    reason: String(reason).slice(0, 2000),
+    url: typeof location !== 'undefined' ? location.href : undefined,
+  });
+});
+
 let state: Config = {
   panes: [],
   nextId: 1,
