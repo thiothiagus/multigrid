@@ -10,6 +10,10 @@ contextBridge.exposeInMainWorld('api', {
   reloadPane: (id: number) => ipcRenderer.invoke('reload-pane', id),
   backPane: (id: number) => ipcRenderer.invoke('back-pane', id),
   clearPaneData: (id: number) => ipcRenderer.invoke('clear-pane-data', id),
+  openExternalLogin: (id: number, url: string) =>
+    ipcRenderer.invoke('open-external-login', { id, url }),
+  importClearance: (id: number, url: string, value: string) =>
+    ipcRenderer.invoke('import-clearance', { id, url, value }),
   exportConfig: () => ipcRenderer.invoke('export-config'),
   importConfig: () => ipcRenderer.invoke('import-config'),
   syncLayout: (layout: LayoutItem[]) => ipcRenderer.send('sync-layout', layout),

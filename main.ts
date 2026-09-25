@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, dialog, screen } from 'electron';
+import { app, BrowserWindow, ipcMain, dialog, screen, shell } from 'electron';
 import path from 'path';
 import fs from 'fs';
 import * as logger from './logger';
@@ -19,6 +19,7 @@ import {
   scheduleRetry,
   showPaneView,
   clearAllPanes,
+  importClearanceToPane,
 } from './src/pane-manager';
 import type { PaneEntry } from './src/types';
 import { initUpdater, checkForUpdates, downloadUpdate, installUpdate } from './src/updater';
@@ -152,6 +153,37 @@ ipcMain.handle('clear-pane-data', (event, id: number) => {
   if (entry) clearPaneDataView(entry);
   return !!entry;
 });
+
+// Fluxo "login pelo navegador": abre a URL do jogo no navegador padrão
+// (onde o challenge da Cloudflare passa) para o usuário resolver lá.
+ipcMain.handle('open-external-login', (_event, { id, url }: { id: number; url: string }) => {
+  const entry = panes.get(id);
+  if (!entry) return false;
+  const target =
+    typeof url === 'string' && /^https?:/i.test(url) ? url : entry.view.webContents.getURL();
+  if (!/^https?:/i.test(target)) return false;
+  void shell.openExternal(target);
+  if (logger) logger.info('auth', 'Login externo aberto no navegador', { paneId: id, url: target });
+  return true;
+});
+
+// Importa o `cf_clearance` resolvido no navegador para a sessão do painel.
+ipcMain.handle(
+  'import-clearance',
+  async (_event, { id, url, value }: { id: number; url: string; value: string }) => {
+    const entry = panes.get(id);
+    const result = await importClearanceToPane(entry, url, value);
+    if (logger) {
+      if (result.ok) logger.info('auth', 'cf_clearance importado', { paneId: id });
+      else
+        logger.error('auth', 'Falha ao importar cf_clearance', {
+          paneId: id,
+          reason: result.reason,
+        });
+    }
+    return result;
+  }
+);
 
 ipcMain.handle('export-config', async () => {
   try {
