@@ -63,7 +63,7 @@
     "publish": {
       "provider": "github",
       "owner": "thiothiagus",
-      "repo": "pokegrid",
+      "repo": "multigrid",
       "releaseType": "release"
     }
   },
