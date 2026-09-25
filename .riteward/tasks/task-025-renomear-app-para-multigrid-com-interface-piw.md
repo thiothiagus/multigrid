@@ -1,7 +1,7 @@
 ---
 id: task-025
 title: Renomear app para MultiGrid com interface PIW
-status: in_progress
+status: done
 priority: 75
 created_at: 2026-09-25
 ---
