@@ -32,6 +32,8 @@ export interface LayoutPreset {
 
 export interface Config {
   gameUrlDefault?: string;
+  /** Perfil de jogo ativo (id de GAME_PROFILES, ex.: 'piw'). Opcional por compat. */
+  activeProfile?: string;
   nextId: number;
   cols: number;
   rows: number;

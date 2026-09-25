@@ -10,21 +10,28 @@ const THEME_VALUES: readonly string[] = ['light', 'dark', 'system'];
 
 export const DEFAULT_URL = 'https://poke.idleworld.online/play';
 
-export const CONFIG_FILENAME = 'pokegrid-config.json';
-export const LEGACY_CONFIG_FILENAME = 'multiconta-config.json';
+export const CONFIG_FILENAME = 'multigrid-config.json';
+export const LEGACY_CONFIG_FILENAME = 'pokegrid-config.json';
+const LEGACY_CONFIG_FILENAME_V0 = 'multiconta-config.json';
 
 export function getConfigPath(userDataPath: string): string {
   return path.join(userDataPath, CONFIG_FILENAME);
 }
 
+const LEGACY_CANDIDATES = [LEGACY_CONFIG_FILENAME, LEGACY_CONFIG_FILENAME_V0];
+
 export function migrateLegacyConfig(userDataPath: string, logger?: Logger): boolean {
   try {
     const newPath = getConfigPath(userDataPath);
     if (fs.existsSync(newPath)) return false;
-    const legacyPath = path.join(userDataPath, LEGACY_CONFIG_FILENAME);
-    if (!fs.existsSync(legacyPath)) return false;
-    fs.renameSync(legacyPath, newPath);
-    return true;
+    for (const legacy of LEGACY_CANDIDATES) {
+      const legacyPath = path.join(userDataPath, legacy);
+      if (fs.existsSync(legacyPath)) {
+        fs.renameSync(legacyPath, newPath);
+        return true;
+      }
+    }
+    return false;
   } catch (e: unknown) {
     const err = e as Error;
     if (logger)
@@ -99,6 +106,7 @@ if (typeof module !== 'undefined' && module.exports) {
     DEFAULT_URL,
     CONFIG_FILENAME,
     LEGACY_CONFIG_FILENAME,
+    LEGACY_CONFIG_FILENAME_V0,
     getConfigPath,
     migrateLegacyConfig,
     loadConfig,

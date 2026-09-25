@@ -31,14 +31,14 @@ describe('config module', () => {
   describe('getConfigPath', () => {
     it('returns the correct file path inside userDataPath', () => {
       const p = getConfigPath('/some/path');
-      expect(p).toBe(path.join('/some/path', 'pokegrid-config.json'));
+      expect(p).toBe(path.join('/some/path', 'multigrid-config.json'));
     });
   });
 
   describe('migrateLegacyConfig', () => {
     it('returns the new filename as canonical and keeps the legacy name constant', () => {
-      expect(CONFIG_FILENAME).toBe('pokegrid-config.json');
-      expect(LEGACY_CONFIG_FILENAME).toBe('multiconta-config.json');
+      expect(CONFIG_FILENAME).toBe('multigrid-config.json');
+      expect(LEGACY_CONFIG_FILENAME).toBe('pokegrid-config.json');
     });
 
     it('renames the legacy file when only it exists', () => {
@@ -63,6 +63,14 @@ describe('config module', () => {
       fs.writeFileSync(legacyPath, JSON.stringify(sample), 'utf-8');
       migrateLegacyConfig(tmpDir);
       expect(loadConfig(getConfigPath(tmpDir))).toEqual(sample);
+    });
+
+    it('migrates the v0 legacy file (multiconta) when no newer file exists', () => {
+      const legacyPath = path.join(tmpDir, 'multiconta-config.json');
+      fs.writeFileSync(legacyPath, JSON.stringify({ nextId: 1 }), 'utf-8');
+      expect(migrateLegacyConfig(tmpDir)).toBe(true);
+      expect(fs.existsSync(legacyPath)).toBe(false);
+      expect(fs.existsSync(getConfigPath(tmpDir))).toBe(true);
     });
 
     it('does nothing when only the new file exists', () => {
