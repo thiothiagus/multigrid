@@ -14,8 +14,8 @@ Perfis por jogo: a interface dedicada ao Poke Idle World chama-se
 **MultiGrid PIW** (padrão); o perfil genérico aceita qualquer URL.
 Projeto independente, sem ligação com o Poke Idle World.
 
-[![CI](https://github.com/thiothiagus/pokegrid/actions/workflows/ci.yml/badge.svg)](https://github.com/thiothiagus/pokegrid/actions/workflows/ci.yml)
-[![Release](https://github.com/thiothiagus/pokegrid/actions/workflows/release.yml/badge.svg)](https://github.com/thiothiagus/pokegrid/actions/workflows/release.yml)
+[![CI](https://github.com/thiothiagus/multigrid/actions/workflows/ci.yml/badge.svg)](https://github.com/thiothiagus/multigrid/actions/workflows/ci.yml)
+[![Release](https://github.com/thiothiagus/multigrid/actions/workflows/release.yml/badge.svg)](https://github.com/thiothiagus/multigrid/actions/workflows/release.yml)
 [![Versão](https://img.shields.io/badge/vers%C3%A3o-0.2.0-2563eb)](package.json)
 [![Electron](https://img.shields.io/badge/Electron-31-47848F?logo=electron&logoColor=white)](https://www.electronjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-100%25-3178C6?logo=typescript&logoColor=white)](docs/MIGRACAO_TYPESCRIPT.md)
@@ -67,14 +67,14 @@ Projeto independente, sem ligação com o Poke Idle World.
 ## Instalação
 
 **Só quer usar?** Baixe o instalador mais recente na aba
-[Releases](https://github.com/thiothiagus/pokegrid/releases) — não precisa de Node.js.
+[Releases](https://github.com/thiothiagus/multigrid/releases) — não precisa de Node.js.
 
 **Pré-requisitos (build local):** [Node.js](https://nodejs.org/) 18+
 
 ```bash
 # clonar o repositório
-git clone https://github.com/thiothiagus/pokegrid.git
-cd pokegrid
+git clone https://github.com/thiothiagus/multigrid.git
+cd multigrid
 
 # instalar dependências
 npm install
