@@ -1,6 +1,6 @@
 version: "1"
 project:
-  name: "pokegrid"
+  name: "multigrid"
   language: "node"
   packageManager: "npm"
   scripts:

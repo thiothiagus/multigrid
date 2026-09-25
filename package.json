@@ -1,7 +1,7 @@
 {
-  "name": "pokegrid",
-  "version": "0.1.3",
-  "description": "Grade flexivel de contas em uma unica janela, com sessoes isoladas, divisorias arrastaveis e recuperacao automatica de travamentos",
+  "name": "multigrid",
+  "version": "0.2.0",
+  "description": "Grade flexivel de contas em uma unica janela, com sessoes isoladas, divisorias arrastaveis, recuperacao automatica e perfis por jogo (MultiGrid PIW primeiro)",
   "main": "main.js",
   "scripts": {
     "build": "tsc -p tsconfig.json && tsc -p tsconfig.renderer.json",
@@ -32,8 +32,8 @@
     "vitest": "^4.1.11"
   },
   "build": {
-    "appId": "com.usuario.pokegrid",
-    "productName": "PokeGrid",
+    "appId": "com.usuario.multigrid",
+    "productName": "MultiGrid",
     "directories": {
       "output": "dist"
     },

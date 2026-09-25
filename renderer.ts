@@ -13,6 +13,12 @@ import {
   GUTTER_PX,
 } from './src/grid-layout.js';
 import { DEFAULT_URL } from './src/config-state.js';
+import {
+  DEFAULT_PROFILE_ID,
+  isValidProfileId,
+  resolveProfileTitle,
+  resolveProfileUrl,
+} from './src/profiles.js';
 import { applyTheme, isValidTheme, nextThemePreference, resolveTheme } from './src/theme.js';
 import type { ThemePreference } from './src/theme.js';
 import {
@@ -126,10 +132,12 @@ function hideSetup() {
   if (gridContainer2) gridContainer2.classList.remove('hidden');
 }
 
-function initFromScratch(n: number, url: string) {
+function initFromScratch(n: number, url: string, profileId: string = DEFAULT_PROFILE_ID) {
   const dims = computeGridDims(n);
+  const profile = isValidProfileId(profileId) ? profileId : DEFAULT_PROFILE_ID;
   state = {
     gameUrlDefault: url,
+    activeProfile: profile,
     nextId: n + 1,
     cols: dims.cols,
     rows: dims.rows,
@@ -141,9 +149,16 @@ function initFromScratch(n: number, url: string) {
   for (let i = 1; i <= n; i++) {
     state.panes.push({ id: i, label: 'Conta ' + i, partition: 'persist:conta' + i, url });
   }
+  setToolbarTitle(profile);
   render();
   syncLayoutToMain();
   persist();
+}
+
+// Título da toolbar reflete o perfil ativo (MultiGrid / MultiGrid PIW).
+function setToolbarTitle(profileId: string | undefined | null) {
+  const el = document.getElementById('toolbar-title');
+  if (el) el.textContent = resolveProfileTitle(profileId ?? DEFAULT_PROFILE_ID);
 }
 
 // ---------------------------------------------------------------------
@@ -717,11 +732,13 @@ systemDarkQuery.addEventListener('change', () => {
 
 setTheme('system');
 
-// A preferencia salva no config sobrepoe a deteccao do SO assim que chegar
+// A preferencia salva no config sobrepoe a deteccao do SO assim que chegar.
+// O perfil salvo também restaura o título da toolbar (prepara task-008).
 window.api
   .loadConfig()
   .then(saved => {
     if (saved && isValidTheme(saved.theme)) setTheme(saved.theme);
+    if (saved && isValidProfileId(saved.activeProfile)) setToolbarTitle(saved.activeProfile);
   })
   .catch(() => {});
 
@@ -877,13 +894,28 @@ document.getElementById('setup-start-btn')!.addEventListener('click', async () =
       parseInt((document.getElementById('setup-count') as HTMLInputElement).value, 10) || 4
     )
   );
+  const profileSelect = document.getElementById('setup-profile') as HTMLSelectElement | null;
+  const rawProfile = profileSelect?.value ?? DEFAULT_PROFILE_ID;
+  const profileId = isValidProfileId(rawProfile) ? rawProfile : DEFAULT_PROFILE_ID;
+  const fallbackUrl = resolveProfileUrl(profileId) || DEFAULT_URL;
   const url =
-    (document.getElementById('setup-url') as HTMLInputElement).value.trim() || DEFAULT_URL;
-  initFromScratch(n, url);
+    (document.getElementById('setup-url') as HTMLInputElement).value.trim() || fallbackUrl;
+  initFromScratch(n, url, profileId);
   for (const pane of state.panes) {
     await window.api.createPane(pane);
   }
   syncLayoutToMain();
+});
+
+// Trocar de perfil no setup preenche a URL padrão dele. No genérico a URL
+// fica por conta do usuário (só preenche se o campo estiver vazio).
+document.getElementById('setup-profile')?.addEventListener('change', e => {
+  const select = e.target as HTMLSelectElement;
+  const preset = resolveProfileUrl(select.value);
+  const urlInput = document.getElementById('setup-url') as HTMLInputElement | null;
+  if (!urlInput) return;
+  if (preset) urlInput.value = preset;
+  else if (!urlInput.value.trim()) urlInput.focus();
 });
 
 // --- Backup / restauracao da configuracao (dialogos nativos no processo) ---

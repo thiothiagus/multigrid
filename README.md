@@ -1,8 +1,8 @@
 <div align="center">
 
-<img src="build/icon.png" alt="PokeGrid" width="128"/>
+<img src="build/icon.png" alt="MultiGrid" width="128"/>
 
-# PokeGrid
+# MultiGrid
 
 **Várias contas. Uma janela. Zero dor de cabeça.**
 
@@ -10,9 +10,14 @@ Gerenciador de desktop (Electron) para usar múltiplas contas simultaneamente
 em uma grade flexível — cada painel com sessão de login independente,
 divisórias arrastáveis e recuperação automática de travamentos.
 
+Perfis por jogo: a interface dedicada ao Poke Idle World chama-se
+**MultiGrid PIW** (padrão); o perfil genérico aceita qualquer URL.
+Projeto independente, sem ligação com o Poke Idle World nem com o
+projeto público de mesmo nome anterior (`soufoka/PokeGrid-source`).
+
 [![CI](https://github.com/thiothiagus/pokegrid/actions/workflows/ci.yml/badge.svg)](https://github.com/thiothiagus/pokegrid/actions/workflows/ci.yml)
 [![Release](https://github.com/thiothiagus/pokegrid/actions/workflows/release.yml/badge.svg)](https://github.com/thiothiagus/pokegrid/actions/workflows/release.yml)
-[![Versão](https://img.shields.io/badge/vers%C3%A3o-0.1.0-2563eb)](package.json)
+[![Versão](https://img.shields.io/badge/vers%C3%A3o-0.2.0-2563eb)](package.json)
 [![Electron](https://img.shields.io/badge/Electron-31-47848F?logo=electron&logoColor=white)](https://www.electronjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-100%25-3178C6?logo=typescript&logoColor=white)](docs/MIGRACAO_TYPESCRIPT.md)
 [![Testes](https://img.shields.io/badge/testes-Vitest-6e9f18?logo=vitest&logoColor=white)](#qualidade)
@@ -40,7 +45,7 @@ divisórias arrastáveis e recuperação automática de travamentos.
 
 ### Grade e layout
 
-- **Tela inicial** — escolha quantas contas quer (1 a 9) e a URL do jogo.
+- **Tela inicial** — escolha a interface (perfil de jogo), quantas contas quer (1 a 9) e a URL. O padrão é **MultiGrid PIW** (Poke Idle World); o perfil genérico aceita qualquer site/jogo.
 - **Divisórias arrastáveis** — passe o mouse na linha entre dois painéis e arraste para redimensionar.
 - **Presets de layout** — menu `Layout…` aplica arranjos prontos em um clique: Igual, Colunas (tudo em uma linha), Linhas (tudo em uma coluna) e "Focar conta N" (a conta escolhida fica ~2,5× maior que as irmãs, sem esconder ninguém). Salve seus próprios layouts com `Salvar layout`, reaplique-os pelo grupo "Meus presets" e exclua com o botão ×; `Resetar layout` devolve o arranjo automático da grade.
 - **Modo foco** — duplo clique no cabeçalho (ou botão ⛶) maximiza um painel sem fechar as outras contas.
@@ -101,7 +106,7 @@ Para gerar um instalador:
 ## Estrutura do projeto
 
 ```
-pokegrid/
+multigrid/
 ├── main.ts               # Processo principal (cria janela, gerencia BrowserViews)
 ├── preload.ts            # Ponte IPC segura (contextBridge)
 ├── renderer.ts           # UI do grid (setup, render, eventos)
@@ -114,6 +119,7 @@ pokegrid/
 │   ├── grid-layout.ts          # Cálculo de layout CSS Grid, frações, resizers
 │   ├── layout-presets.ts       # Presets de layout (Igual, Colunas, Linhas, Focar, personalizados)
 │   ├── pane-manager.ts         # Criação/remoção/atualização de BrowserViews
+│   ├── profiles.ts             # Perfis de jogo (MultiGrid PIW, genérico — sem forks)
 │   ├── pane-ui.ts              # Atualização de status (bolinha, overlay)
 │   ├── focus-manager.ts        # Estado de foco (modo foco painel)
 │   ├── win-state.ts            # Persistência de geometria da janela
@@ -148,13 +154,14 @@ Cada conta usa partição `persist:conta<N>` — cookies, localStorage, cache e 
 
 ### Configuração persistida
 
-Arquivo: `%APPDATA%/pokegrid/pokegrid-config.json`
+Arquivo: `%APPDATA%/multigrid/multigrid-config.json` (migra sozinho de `pokegrid-config.json` e do legado `multiconta-config.json`).
 
-Na primeira execução após a renomeação do projeto, o arquivo legado `multiconta-config.json` é renomeado automaticamente para o novo nome.
+Na primeira execução após a renomeação do projeto, o arquivo legado `pokegrid-config.json` é renomeado automaticamente para o novo nome.
 
 Contém:
 
 - `gameUrlDefault` — URL padrão para novas contas
+- `activeProfile` — perfil de jogo ativo (`piw` = MultiGrid PIW, `generic` = genérico)
 - `nextId` — próximo ID sequencial
 - `cols`, `rows` — grade atual
 - `colFr`, `rowFr` — frações CSS Grid (`1fr` = tamanho igual)

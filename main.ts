@@ -49,7 +49,7 @@ function createWindow(): void {
   const winOpts: Partial<import('electron').BrowserWindowConstructorOptions> = {
     width: bounds.width,
     height: bounds.height,
-    title: 'PokeGrid',
+    title: 'MultiGrid',
     icon: path.join(__dirname, 'build', 'icon.png'),
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
@@ -191,7 +191,7 @@ ipcMain.handle('export-config', async () => {
     if (!win) return { ok: false, reason: 'no-window' };
     const { canceled, filePath } = await dialog.showSaveDialog(win, {
       title: 'Exportar configuração (backup)',
-      defaultPath: 'pokegrid-config.json',
+      defaultPath: 'multigrid-config.json',
       filters: [{ name: 'JSON', extensions: ['json'] }],
     });
     if (canceled || !filePath) return { ok: false, reason: 'canceled' };

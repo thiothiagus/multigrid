@@ -10,14 +10,14 @@
   protecao para a casca do app.
 -->
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self';">
-<title>PokeGrid</title>
+<title>MultiGrid</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
   <div id="toolbar">
     <div id="toolbar-left">
-      <span id="toolbar-title">PokeGrid</span>
+      <span id="toolbar-title">MultiGrid</span>
       <span id="toolbar-version"></span>
     </div>
     <div id="toolbar-actions">
@@ -38,8 +38,16 @@
 
   <div id="setup-screen">
     <div class="setup-box">
-      <h1>PokeGrid</h1>
+      <h1>MultiGrid</h1>
       <p>Quantas contas você quer abrir de uma vez, na mesma janela?</p>
+
+      <label>
+        Interface
+        <select id="setup-profile">
+          <option value="piw" selected>MultiGrid PIW — Poke Idle World</option>
+          <option value="generic">MultiGrid genérico — outra URL</option>
+        </select>
+      </label>
 
       <label>
         Número de contas

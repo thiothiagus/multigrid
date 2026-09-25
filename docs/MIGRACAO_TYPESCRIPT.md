@@ -24,6 +24,7 @@ O projeto foi **100% migrado de JavaScript para TypeScript**. Todo código de ap
 | `src/focus-manager.ts` | `src/focus-manager.js` | `tsconfig.json` |
 | `src/win-state.ts` | `src/win-state.js` | `tsconfig.json` |
 | `src/retry.ts` | `src/retry.js` | `tsconfig.json` |
+| `src/profiles.ts` | `src/profiles.js` | ambos |
 | `src/types.ts` | (apenas tipos, sem JS) | ambos |
 
 Shims removidos: `src/grid-layout.d.ts` e `src/pane-manager.d.ts` (eram gambiarras JS→TS, substituídos pelos `.ts` reais).
