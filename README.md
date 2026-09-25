@@ -12,8 +12,7 @@ divisórias arrastáveis e recuperação automática de travamentos.
 
 Perfis por jogo: a interface dedicada ao Poke Idle World chama-se
 **MultiGrid PIW** (padrão); o perfil genérico aceita qualquer URL.
-Projeto independente, sem ligação com o Poke Idle World nem com o
-projeto público de mesmo nome anterior (`soufoka/PokeGrid-source`).
+Projeto independente, sem ligação com o Poke Idle World.
 
 [![CI](https://github.com/thiothiagus/pokegrid/actions/workflows/ci.yml/badge.svg)](https://github.com/thiothiagus/pokegrid/actions/workflows/ci.yml)
 [![Release](https://github.com/thiothiagus/pokegrid/actions/workflows/release.yml/badge.svg)](https://github.com/thiothiagus/pokegrid/actions/workflows/release.yml)
