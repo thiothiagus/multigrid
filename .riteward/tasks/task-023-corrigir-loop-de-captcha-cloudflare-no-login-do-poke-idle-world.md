@@ -1,7 +1,7 @@
 ---
 id: task-023
 title: Corrigir loop de captcha Cloudflare no login do Poke Idle World
-status: in_progress
+status: done
 priority: 75
 created_at: 2026-09-25
 ---
