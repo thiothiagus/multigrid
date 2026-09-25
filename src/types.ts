@@ -88,6 +88,12 @@ export interface WindowApi {
   reloadPane: (id: number) => Promise<boolean>;
   backPane: (id: number) => Promise<boolean>;
   clearPaneData: (id: number) => Promise<boolean>;
+  openExternalLogin: (id: number, url: string) => Promise<boolean>;
+  importClearance: (
+    id: number,
+    url: string,
+    value: string
+  ) => Promise<{ ok: boolean; reason?: string }>;
   exportConfig: () => Promise<{ ok: boolean; path?: string } | null>;
   importConfig: () => Promise<Config | null>;
   syncLayout: (layout: LayoutItem[]) => void;

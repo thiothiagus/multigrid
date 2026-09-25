@@ -291,6 +291,14 @@ function createPaneElement(pane: { id: number; label: string; partition: string;
   focusBtn.title = isFocused ? 'Restaurar grid (Sair do Foco)' : 'Focar painel (Modo Foco)';
   focusBtn.className = isFocused ? 'focus-btn is-active' : 'focus-btn';
 
+  const extLoginBtn = document.createElement('button');
+  extLoginBtn.textContent = '\u{1F310}';
+  extLoginBtn.title = 'Abrir login no navegador (resolve o challenge da Cloudflare lá)';
+
+  const clearanceBtn = document.createElement('button');
+  clearanceBtn.textContent = '\u{1F511}';
+  clearanceBtn.title = 'Colar cf_clearance do navegador (importa a verificação para esta conta)';
+
   const clearBtn = document.createElement('button');
   clearBtn.textContent = '\u232B'; // "⌫" (apagar)
   clearBtn.title = 'Limpar dados desta conta (reset do login)';
@@ -313,6 +321,25 @@ function createPaneElement(pane: { id: number; label: string; partition: string;
 
   backBtn.addEventListener('click', () => window.api.backPane(pane.id));
   reloadBtn.addEventListener('click', () => window.api.reloadPane(pane.id));
+  extLoginBtn.addEventListener('click', () => window.api.openExternalLogin(pane.id, pane.url));
+  clearanceBtn.addEventListener('click', async () => {
+    const value = window.prompt(
+      '1) No Chrome, abra o jogo e passe pelo challenge da Cloudflare.\n' +
+        '2) Aperte F12 > Application > Cookies e copie o valor de cf_clearance.\n' +
+        '3) Cole abaixo:'
+    );
+    if (!value || !value.trim()) return;
+    const res = await window.api.importClearance(pane.id, pane.url, value.trim());
+    if (res && res.ok) {
+      window.api.reloadPane(pane.id);
+    } else {
+      window.alert(
+        'Não foi possível importar. Confira se copiou só o valor do cf_clearance ' +
+          '(sem espaços). Detalhe: ' +
+          ((res && res.reason) || 'erro desconhecido')
+      );
+    }
+  });
   focusBtn.addEventListener('click', () => {
     toggleFocusPane(pane.id);
     updateFocusState(state, document.getElementById('grid-container'));
@@ -333,6 +360,8 @@ function createPaneElement(pane: { id: number; label: string; partition: string;
   actions.appendChild(backBtn);
   actions.appendChild(reloadBtn);
   actions.appendChild(focusBtn);
+  actions.appendChild(extLoginBtn);
+  actions.appendChild(clearanceBtn);
   actions.appendChild(clearBtn);
   actions.appendChild(closeBtn);
   header.appendChild(labelWrap);
